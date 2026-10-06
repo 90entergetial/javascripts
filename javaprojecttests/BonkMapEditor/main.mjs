@@ -3,7 +3,7 @@ import { Map } from "./Map.mjs";
 /*
 
 For this, run
-cd /Users/90entergetial/Desktop/javascripts
+cd ~/Desktop/javascripts/javaprojecttests
 python3 -m http.server 8081
 
 then open

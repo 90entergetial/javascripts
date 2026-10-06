@@ -2,12 +2,12 @@ import bibleWords from './isthisinthebible.json' with { type: 'json' };
 /*
 
 For this, run
-cd /Users/90entergetial/Desktop/javascripts
+cd ~/Desktop/javascripts/javaprojecttests
 python3 -m http.server 8081
 
 then open
 
-http://localhost:8081/.vscode/isthisinthebible.html
+http://localhost:8081/isthisinthebible.html
 
 */
 document.addEventListener('DOMContentLoaded', () => {
