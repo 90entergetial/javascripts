@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch HTML",
+            "file": "http://127.0.0.1:8081/main.html"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch FILE",
+            "file": "http://127.0.0.1:8081/test.js"
+        }
+    ]
+}
