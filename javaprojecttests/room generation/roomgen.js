@@ -252,244 +252,251 @@ window.onload = function () {
             var facing = Math.floor(Math.random()*4);
             var chance = Math.random();
             var skip = false;
+            //Checking for collisions with existing room blocks
             for(var i = 0; i < roomgrid.length; i++) {
                 //if this already collides with a box then dont spawn and retry
                 if(boxcollide(Snode.x, Snode.y, 1, 1, Snode.depth, roomgrid[i].x, roomgrid[i].y, roomgrid[i].w, roomgrid[i].h, roomgrid[i].depth, "sizematters")) {
                     skip = true;
                     keep = true;
                     //juuust marking it
-                    roomgrid.push(
-                        {
-                            x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -1)),
-                            y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, -1)),
-                            w:3,
-                            h:3,
-                            id:-1,
-                            depth:Snode.depth,
-                        }
-                    );
-                    Snode.depth++;
-                    
+                    // roomgrid.push(
+                    //     {
+                    //         x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -1)),
+                    //         y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, -1)),
+                    //         w:3,
+                    //         h:3,
+                    //         id:-1,
+                    //         depth:Snode.depth,
+                    //     }
+                    // );
+                    // Snode.depth++;
+
+                    // Since this node is already blocked, remove it
+                    nodes.splice(Selectednode, 1);
                     break;
                 }
             }
+            //there's already a box collision, don't spawn.
             if(skip) break;
-            // if(chance < 0.7) {
 
-            //     if(facing == 0) {
-            //         if(attemptplaceblock(Snode.x, Snode.y, 1, h, roomgrid.length%2, Snode.depth, Snode)) {
-            //         //also spawn a node
-            //         nodes.push(
-            //             {
-            //                 x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, 0)),
-            //                 y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h)),
-            //                 depth:Snode.depth,
-            //             }
-            //         );
-            //         } else {
-            //             continue;
-            //         }
+            /*starting room generation for a new block*/
+            if(chance < 0.7) {
 
-            //     }
-            //     else if(facing == 1) {
-            //         if(attemptplaceblock(Snode.x, Snode.y, h, 1, roomgrid.length%2, Snode.depth, Snode)) {
-            //             //also spawn a node
-            //             nodes.push(
-            //                 {
-            //                     x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h)),
-            //                     y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, 0)),
-            //                     depth:Snode.depth,
-            //                 }
-            //             );
-            //         } else {
-            //                 continue;
-            //         }
+                if(facing == 0) {
+                    if(attemptplaceblock(Snode.x, Snode.y, 1, h, roomgrid.length%2, Snode.depth, Snode)) {
+                    //also spawn a node
+                    nodes.push(
+                        {
+                            x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, 0)),
+                            y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h)),
+                            depth:Snode.depth,
+                        }
+                    );
+                    } else {
+                        continue;
+                    }
+
+                }
+                else if(facing == 1) {
+                    if(attemptplaceblock(Snode.x, Snode.y, h, 1, roomgrid.length%2, Snode.depth, Snode)) {
+                        //also spawn a node
+                        nodes.push(
+                            {
+                                x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h)),
+                                y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, 0)),
+                                depth:Snode.depth,
+                            }
+                        );
+                    } else {
+                            continue;
+                    }
                     
 
-            //     }
-            //     else if(facing == 2) {
-            //         if(attemptplaceblock(changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h+1)), Snode.y, h, 1, roomgrid.length%2, Snode.depth, Snode)) {
-            //             //also spawn a node
-            //             nodes.push(
-            //                 {
-            //                     x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h)),
-            //                     y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, 0)),
-            //                     depth:Snode.depth,
-            //                 }
-            //             );
-            //         } else {
-            //                 continue;
-            //         }
+                }
+                else if(facing == 2) {
+                    if(attemptplaceblock(changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h+1)), Snode.y, h, 1, roomgrid.length%2, Snode.depth, Snode)) {
+                        //also spawn a node
+                        nodes.push(
+                            {
+                                x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h)),
+                                y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, 0)),
+                                depth:Snode.depth,
+                            }
+                        );
+                    } else {
+                            continue;
+                    }
 
-            //     }
-            //     else {
-            //         if(attemptplaceblock(Snode.x, changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, -h+1)), 1, h, roomgrid.length%2, Snode.depth, Snode)) {
-            //             //also spawn a node
-            //             nodes.push(
-            //                 {
-            //                     x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, 0)),
-            //                     y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, -h)),
-            //                     depth:Snode.depth,
-            //                 }
-            //             );
-            //         } else {
-            //                 continue;
+                }
+                else {
+                    if(attemptplaceblock(Snode.x, changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, -h+1)), 1, h, roomgrid.length%2, Snode.depth, Snode)) {
+                        //also spawn a node
+                        nodes.push(
+                            {
+                                x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, 0)),
+                                y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, -h)),
+                                depth:Snode.depth,
+                            }
+                        );
+                    } else {
+                            continue;
+                    }
+                }
+            } else {
+                var h = Math.floor(Math.random()*11)+4;
+                var theid = (roomgrid.length%2)+3
+                if(chance < 0.71) h = Math.floor(Math.random()*32)+32;
+                if(chance < 0.71) theid = -2;
+                var h2 = Math.floor(Math.random()*(h-1))+1;
+                if(attemptplaceblock(changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2)), Snode.y, h, h, theid, Snode.depth, Snode)) {
+                    //also spawn a node
+                    destroy = true;
+                    nodes.push(
+                        {
+                            x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2)),
+                            y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h)),
+                            depth:Snode.depth,
+                        }
+                    );
+                    nodes.push(
+                        {
+                            x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2)),
+                            y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/2))),
+                            depth:Snode.depth,
+                        }
+                    );
+                    nodes.push(
+                        {
+                            x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2-1)),
+                            y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/2))),
+                            depth:Snode.depth,
+                        }
+                    );
+                    if(chance < 0.71) {
+                        nodes.push(
+                            {
+                                x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2)),
+                                y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/4))),
+                                depth:Snode.depth,
+                            }
+                        );
+                        nodes.push(
+                            {
+                                x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2-1)),
+                                y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/4))),
+                                depth:Snode.depth,
+                            }
+                        );
+                        nodes.push(
+                            {
+                                x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2)),
+                                y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h*(3/4)))),
+                                depth:Snode.depth,
+                            }
+                        );
+                        nodes.push(
+                            {
+                                x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2-1)),
+                                y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h*(3/4)))),
+                                depth:Snode.depth,
+                            }
+                        );
+                        nodes.push(
+                            {
+                                x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2-1)),
+                                y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h)),
+                                depth:Snode.depth,
+                            }
+                        );
+                        nodes.push(
+                            {
+                                x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, Math.floor(h/2)-h2)),
+                                y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h)),
+                                depth:Snode.depth,
+                            }
+                        );
+                    }
+                } else {
+                    continue;
+                }
+            }
+
+            // var h = Math.floor(Math.random()*11)+4;
+            // var theid = (roomgrid.length%2)+3
+            // if(chance < 0.01) h = Math.floor(Math.random()*32)+32;
+            // if(chance < 0.01) theid = -2;
+            // var h2 = Math.floor(Math.random()*(h));
+            // if(attemptplaceblock(changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2)), changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, 1)), h, h, theid, Snode.depth, Snode)) {
+            //     //also spawn a node
+            //     destroy = true;
+            //     nodes.push(
+            //         {
+            //             x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2)),
+            //             y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h+1)),
+            //             depth:Snode.depth,
             //         }
-            //     }
-            // } else {
-            //     var h = Math.floor(Math.random()*11)+4;
-            //     var theid = (roomgrid.length%2)+3
-            //     if(chance < 0.71) h = Math.floor(Math.random()*32)+32;
-            //     if(chance < 0.71) theid = -2;
-            //     var h2 = Math.floor(Math.random()*(h-1))+1;
-            //     if(attemptplaceblock(changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2)), Snode.y, h, h, theid, Snode.depth, Snode)) {
-            //         //also spawn a node
-            //         destroy = true;
-            //         nodes.push(
-            //             {
-            //                 x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2)),
-            //                 y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h)),
-            //                 depth:Snode.depth,
-            //             }
-            //         );
+            //     );
+            //     nodes.push(
+            //         {
+            //             x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2)),
+            //             y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/2)+1)),
+            //             depth:Snode.depth,
+            //         }
+            //     );
+            //     nodes.push(
+            //         {
+            //             x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2-1)),
+            //             y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/2)+1)),
+            //             depth:Snode.depth,
+            //         }
+            //     );
+            //     if(chance < 0.01) {
             //         nodes.push(
             //             {
             //                 x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2)),
-            //                 y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/2))),
+            //                 y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/4)+1)),
             //                 depth:Snode.depth,
             //             }
             //         );
             //         nodes.push(
             //             {
             //                 x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2-1)),
-            //                 y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/2))),
+            //                 y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/4)+1)),
             //                 depth:Snode.depth,
             //             }
             //         );
-            //         if(chance < 0.71) {
-            //             nodes.push(
-            //                 {
-            //                     x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2)),
-            //                     y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/4))),
-            //                     depth:Snode.depth,
-            //                 }
-            //             );
-            //             nodes.push(
-            //                 {
-            //                     x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2-1)),
-            //                     y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/4))),
-            //                     depth:Snode.depth,
-            //                 }
-            //             );
-            //             nodes.push(
-            //                 {
-            //                     x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2)),
-            //                     y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h*(3/4)))),
-            //                     depth:Snode.depth,
-            //                 }
-            //             );
-            //             nodes.push(
-            //                 {
-            //                     x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2-1)),
-            //                     y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h*(3/4)))),
-            //                     depth:Snode.depth,
-            //                 }
-            //             );
-            //             nodes.push(
-            //                 {
-            //                     x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2-1)),
-            //                     y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h)),
-            //                     depth:Snode.depth,
-            //                 }
-            //             );
-            //             nodes.push(
-            //                 {
-            //                     x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, Math.floor(h/2)-h2)),
-            //                     y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h)),
-            //                     depth:Snode.depth,
-            //                 }
-            //             );
-            //         }
-            //     } else {
-            //         continue;
+            //         nodes.push(
+            //             {
+            //                 x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2)),
+            //                 y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h*(3/4))+1)),
+            //                 depth:Snode.depth,
+            //             }
+            //         );
+            //         nodes.push(
+            //             {
+            //                 x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2-1)),
+            //                 y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h*(3/4))+1)),
+            //                 depth:Snode.depth,
+            //             }
+            //         );
+            //         nodes.push(
+            //             {
+            //                 x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2-1)),
+            //                 y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h+1)),
+            //                 depth:Snode.depth,
+            //             }
+            //         );
+            //         nodes.push(
+            //             {
+            //                 x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, Math.floor(h/2)-h2)),
+            //                 y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h+1)),
+            //                 depth:Snode.depth,
+            //             }
+            //         );
             //     }
+            // } else {
+            //     continue;
             // }
-            var h = Math.floor(Math.random()*11)+4;
-            var theid = (roomgrid.length%2)+3
-            if(chance < 0.01) h = Math.floor(Math.random()*32)+32;
-            if(chance < 0.01) theid = -2;
-            var h2 = Math.floor(Math.random()*(h));
-            if(attemptplaceblock(changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2)), changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, 1)), h, h, theid, Snode.depth, Snode)) {
-                //also spawn a node
-                destroy = true;
-                nodes.push(
-                    {
-                        x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2)),
-                        y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h+1)),
-                        depth:Snode.depth,
-                    }
-                );
-                nodes.push(
-                    {
-                        x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2)),
-                        y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/2)+1)),
-                        depth:Snode.depth,
-                    }
-                );
-                nodes.push(
-                    {
-                        x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2-1)),
-                        y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/2)+1)),
-                        depth:Snode.depth,
-                    }
-                );
-                if(chance < 0.01) {
-                    nodes.push(
-                        {
-                            x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2)),
-                            y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/4)+1)),
-                            depth:Snode.depth,
-                        }
-                    );
-                    nodes.push(
-                        {
-                            x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2-1)),
-                            y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h/4)+1)),
-                            depth:Snode.depth,
-                        }
-                    );
-                    nodes.push(
-                        {
-                            x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2)),
-                            y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h*(3/4))+1)),
-                            depth:Snode.depth,
-                        }
-                    );
-                    nodes.push(
-                        {
-                            x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, -h2-1)),
-                            y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, Math.floor(h*(3/4))+1)),
-                            depth:Snode.depth,
-                        }
-                    );
-                    nodes.push(
-                        {
-                            x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, h-h2-1)),
-                            y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h+1)),
-                            depth:Snode.depth,
-                        }
-                    );
-                    nodes.push(
-                        {
-                            x:changeposition(Snode.x, easyoffset(Snode.depth, Snode.depth, Math.floor(h/2)-h2)),
-                            y:changeposition(Snode.y, easyoffset(Snode.depth, Snode.depth, h+1)),
-                            depth:Snode.depth,
-                        }
-                    );
-                }
-            } else {
-                continue;
-            }
             break;
         }
         //if(skip)
@@ -537,7 +544,7 @@ window.onload = function () {
     var rend = 0, rend2 = 0;
     function update() {
         for(var Q = 0; Q < (100)+((roomgrid.length-5000)/5000)*90; Q++){
-            if(roomgrid.length < 5000) {
+            if(roomgrid.length < 1000) {
                 makerooms();
             }
         }
@@ -608,7 +615,7 @@ window.onload = function () {
             if(room.id == -1) ctx.fillRect(actualx*camera.gridsize+camera.x+camera.gridsize*actualw/20, actualy*camera.gridsize+camera.y+camera.gridsize*actualw/20, camera.gridsize*actualw/1.1, camera.gridsize*actualh/1.1);
             rend++;
         }
-        if(roomgrid.length < 5000) {
+        if(roomgrid.length < 1000) {
         for(var i = 0; i < nodes.length; i++) {
             var node = nodes[i];
             ctx.fillStyle = "rgb(209, 209, 209)";
