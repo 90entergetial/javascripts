@@ -5,8 +5,8 @@ window.onload = function () {
 
     // const canvas = document.getElementById("cav");
     // const ctx = canvas.getContext("2d");
-    var mouseY = -1000;
-    var mouseX = -1000;
+    // var mouseY = -1000;
+    // var mouseX = -1000;
     var clicked = false;
     var pressed = false;
 
@@ -68,17 +68,18 @@ window.onload = function () {
 
     }
 
-    window.addEventListener("mouseup", (event) => {
-        clicked = true;
-        pressed = false;
-    });
-    window.addEventListener("mousedown", (event) => {
-        pressed = true;
-    });
-    window.addEventListener("mousemove", (event) => {
-        mouseX = event.clientX;
-        mouseY = event.clientY;
-    });
+    // window.addEventListener("mouseup", (event) => {
+    //     clicked = true;
+    //     pressed = false;
+    // });
+    // window.addEventListener("mousedown", (event) => {
+    //     pressed = true;
+    // });
+    // window.addEventListener("mousemove", (event) => {
+    //     mouseX = event.clientX;
+    //     mouseY = event.clientY;
+    // });
+
     var container = document.getElementById("container");
 
     var Latex_List = [
@@ -120,7 +121,16 @@ window.onload = function () {
             Latex_List.splice(0, 1);
             playNote(220, 100, 0.1); // Play a note when moving to the next LaTeX
         }
+        while (Latex_List.length < 6) {
+            generateRandomLaTeX();
+        }
         Latexrender();
+        Listrender();
+    }
+    function generateRandomLaTeX() {
+        //generates a random LaTeX string and adds it to the list
+        var randomLaTeX = String.raw`${Math.floor(Math.random() * 10)+1}`;
+        Latex_List.push(randomLaTeX);
         Listrender();
     }
 
