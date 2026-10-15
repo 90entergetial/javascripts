@@ -21,6 +21,18 @@
         pointer-events: none;
         background-image: radial-gradient(circle, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 100%);
     }
+    #answer {
+        position: absolute;
+        top: 70%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+        color: white;
+        font-size: 20px;
+        text-align: center;
+        pointer-events: none;
+        transition:all 0.3s ease-in-out;
+    }
     #list {
         position: absolute;
         top: -5px;
@@ -51,6 +63,7 @@
         width: 100px;
         height: 50px;
         font-size: 1.2em;
+        transition: all 0.1s ease-in-out;
     }
     #nextButton:hover {
         background-color: rgba(255, 255, 255, 0.1);
@@ -73,6 +86,28 @@
         color: rgb(255, 255, 255, 0.4);
         font-size: 1.5em;
     }
+    #input {
+        position: absolute;
+        top: 70%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+        color: white;
+        font-size: 20px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0);
+        pointer-events: auto;
+        background-color: rgba(255, 255, 255, 0.01);
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+        width: 300px;
+        transition: all 0.1s ease-in-out;
+    }
+    #input:focus {
+        outline: none;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
     </style>
 </head>
 <body style="margin: 0px; overflow: hidden;">
@@ -81,6 +116,8 @@
         <p1 id="stage">Stage: Undetermined</p1>
     </div>
     <div id="container"></div>
+    <div id="answer"></div>
+    <input type="text" id="input" placeholder=" ">
     <div id="list"></div>
     <div id="buttons">
         <button id="nextButton">Skip</button>

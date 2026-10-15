@@ -81,16 +81,16 @@ window.onload = function () {
     // });
 
     var container = document.getElementById("container");
-
+    
     var Latex_List = [
-        String.raw`2`,
-        String.raw`3`,
-        String.raw`4`,
-        String.raw`5`,
-        String.raw`6`,
+        [String.raw`x = 2`, 2],
+        [String.raw`x = 3`, 3],
+        [String.raw`x = 4`, 4],
+        [String.raw`x = 5`, 5],
+        [String.raw`x = 6`, 6],
     ];
-    var LaTex = String.raw`1`;
-
+    var LaTex = [String.raw`x = 1`, 1];
+    var answer = String.raw`x = (?)`;
     var list = document.getElementById("list");
 
     function Listrender() {
@@ -100,7 +100,7 @@ window.onload = function () {
             var item = document.createElement("div");
             item.className = "list-item";
             list.appendChild(item);
-            katex.render(Latex_List[i], item, { throwOnError: false });
+            katex.render(Latex_List[i][0], item, { throwOnError: false });
 
             //shrink font until it fits inside the list
             var size = 1.5;
@@ -112,14 +112,15 @@ window.onload = function () {
     }
     function Latexrender() {
         //renders LaTeX into container (only needs to run when LaTex changes)
-        katex.render(LaTex, container, { displayMode: true, throwOnError: false });
+        katex.render(LaTex[0], container, { displayMode: true, throwOnError: false });
+        katex.render(answer, document.getElementById("answer"), { displayMode: true, throwOnError: false });
     }
     function nextLaTeX() {
         //gets the next LaTeX string from the list and updates the display
         if (Latex_List.length > 0) {
             LaTex = Latex_List[0];
             Latex_List.splice(0, 1);
-            playNote(220, 100, 0.1); // Play a note when moving to the next LaTeX
+            playNote(220, 100, 0.6); // Play a note when moving to the next LaTeX
         }
         while (Latex_List.length < 6) {
             generateRandomLaTeX();
@@ -129,17 +130,83 @@ window.onload = function () {
     }
     function generateRandomLaTeX() {
         //generates a random LaTeX string and adds it to the list
-        var randomLaTeX = String.raw`${Math.floor(Math.random() * 10)+1}`;
+        var rn = Math.floor(Math.random() * 10);
+        var randomLaTeX = [String.raw`x = ${rn}`, rn];
+        if(Math.random() < 0.1) {
+            randomLaTeX = [String.raw`x = SUCC(${rn})`, rn+1];
+        }
+        if(Math.random() < 0.01) {
+            randomLaTeX = [String.raw`x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}`, 0];
+        }
         Latex_List.push(randomLaTeX);
         Listrender();
     }
+    function check(guess) {
 
+        //simplifying guess down to a number and checking if it matches the answer
+        //just in case someone uses \frac or \cdot or other LaTex commands
+        guess = guess.replace(/\\cdot/g, "*");
+        guess = guess.replace(/\\frac{([^}]*)}{([^}]*)}/g, "($1)/($2)");
+        guess = guess.replace(/\\sqrt{([^}]*)}/g, "Math.sqrt($1)");
+        guess = guess.replace(/\\left/g, "");
+        guess = guess.replace(/\\right/g, "");
+        
+        //convert guess to a number
+        try {
+            guess = eval(guess);
+        } catch (e) {
+            return false;
+        }
+        if(guess == LaTex[1]) {
+            return true;
+        }
+        return false;
+    }
     Latexrender();
     Listrender();
     window.addEventListener("resize", Listrender);
 
     var nextButton = document.getElementById("nextButton");
     nextButton.addEventListener("click", nextLaTeX);
+
+    var inputField = document.getElementById("input");
+
+    var answerb = document.getElementById("answer");
+    if(inputField.value == "" || inputField.value.trim() == "") {
+        answerb.style.color = "rgba(255, 255, 255, 0.5)";
+    } else {
+        answerb.style.color = "white";
+    }
+
+    inputField.addEventListener("input", function() {
+        if(inputField.value == "" || inputField.value.trim() == "") {
+            answer = String.raw`x = (?)`;
+            answerb.style.color = "rgba(255, 255, 255, 0.5)";
+        } else {
+            answer = String.raw`x = ${inputField.value}`;
+            answerb.style.color = "white";
+        }
+        Latexrender();
+    });
+    inputField.addEventListener("keydown", function(event) {
+        if(event.key === "Enter" && !(inputField.value == "" || inputField.value.trim() == "")) {
+            if(check(inputField.value.trim())) {
+                nextLaTeX();
+                inputField.value = "";
+                answer = String.raw`x = (?)`;
+                answerb.style.color = "rgba(255, 255, 255, 0.5)";
+                Latexrender();
+            } else {
+                playNote(110, 100, 0.6);
+                answerb.style.transition = "none";
+                answerb.style.color = "rgba(255, 0, 0, 1)";
+                setTimeout(function() {
+                answerb.style.transition = "all 0.3s ease-in-out";
+                    answerb.style.color = "white";
+                }, 100);
+            }
+        }
+    });
 
 };
 //we set the dark on fire
