@@ -3,19 +3,19 @@ var audioCtx = new(window.AudioContext || window.webkitAudioContext)();
 
 window.onload = function () {
 
-    const canvas = document.getElementById("cav");
-    const ctx = canvas.getContext("2d");
+    // const canvas = document.getElementById("cav");
+    // const ctx = canvas.getContext("2d");
     var mouseY = -1000;
     var mouseX = -1000;
     var clicked = false;
     var pressed = false;
 
-    function playNote(frequency, duration) {
+    function playNote(frequency, duration, loudness) {
         // create Oscillator node
         var oscillator = audioCtx.createOscillator();
         var gainNode = audioCtx.createGain();
         gainNode.gain.value = 0;
-        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.02); // Fade in to 0.1 volume over 10ms
+        gainNode.gain.linearRampToValueAtTime(loudness, audioCtx.currentTime + 0.02); // Fade in to 0.1 volume over 10ms
       
         oscillator.type = 'sine';
         oscillator.frequency.value = frequency; // value in hertz
@@ -80,34 +80,57 @@ window.onload = function () {
         mouseY = event.clientY;
     });
     var container = document.getElementById("container");
-    var LaTex = String.raw`v\left(t\right)=\sqrt{\frac{gm}{b}}\left(\frac{e^{2\sqrt{\frac{gb}{m}}t}-1}{e^{2\sqrt{\frac{gb}{m}}t}+1}\right)`;
 
+    var Latex_List = [
+        String.raw`2`,
+        String.raw`3`,
+        String.raw`4`,
+        String.raw`5`,
+        String.raw`6`,
+    ];
+    var LaTex = String.raw`1`;
+
+    var list = document.getElementById("list");
+
+    function Listrender() {
+        //renders the 5 most recent LaTeX strings into the list (only needs to run when Latex_List changes)
+        list.innerHTML = "";
+        for (var i = Math.min(5, Latex_List.length) - 1; i >= 0; i--) {
+            var item = document.createElement("div");
+            item.className = "list-item";
+            list.appendChild(item);
+            katex.render(Latex_List[i], item, { throwOnError: false });
+
+            //shrink font until it fits inside the list
+            var size = 1.5;
+            while (item.scrollWidth > item.clientWidth && size > 0.3) {
+                size -= 0.05;
+                item.style.fontSize = size + "em";
+            }
+        }
+    }
     function Latexrender() {
         //renders LaTeX into container (only needs to run when LaTex changes)
         katex.render(LaTex, container, { displayMode: true, throwOnError: false });
     }
-    Latexrender();
-    
-    function update() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        //bg
-        ctx.fillStyle = "rgb(0, 0, 0)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        //mouse
-        ctx.fillStyle = "rgb(200, 10, 10)"
-        ctx.beginPath();
-        ctx.arc(mouseX, mouseY, 5, 0, Math.PI*2);
-        ctx.fill();
-
-        requestAnimationFrame(update);
-        clicked = false;
+    function nextLaTeX() {
+        //gets the next LaTeX string from the list and updates the display
+        if (Latex_List.length > 0) {
+            LaTex = Latex_List[0];
+            Latex_List.splice(0, 1);
+            playNote(220, 100, 0.1); // Play a note when moving to the next LaTeX
+        }
+        Latexrender();
+        Listrender();
     }
 
-    // start boi
-    update();
+    Latexrender();
+    Listrender();
+    window.addEventListener("resize", Listrender);
+
+    var nextButton = document.getElementById("nextButton");
+    nextButton.addEventListener("click", nextLaTeX);
+
 };
 //we set the dark on fire
 // To start server, do "http-server" in .vscode terminal then open http://127.0.0.1:8080/main.html in browser
