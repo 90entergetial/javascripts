@@ -83,7 +83,7 @@ window.onload = function () {
     var container = document.getElementById("container");
     
     var Latex_List = [
-        [String.raw`x = 2`, 2],
+        [String.raw`2 = e^x`, Math.log(2)/Math.log(Math.E)],
         [String.raw`x = 3`, 3],
         [String.raw`x = 4`, 4],
         [String.raw`x = 5`, 5],
@@ -92,6 +92,81 @@ window.onload = function () {
     var LaTex = [String.raw`x = 1`, 1];
     var answer = String.raw`x = (?)`;
     var list = document.getElementById("list");
+
+    var problemtypes = [
+        "Basic Arithmetic",
+        "Exponents",
+        "Logarithms",
+        "Fractions",
+        "Square Roots"
+    ]
+    var subproblemtypes = {
+        "Basic Arithmetic": {
+            "Straight Addition": [
+                {
+                    format: function(a, b) { return "x =  " + a + " + " + b; },
+                    answer: function(a, b) { return a + b; },
+                    customrandom: function() { 
+                        return {a: Math.floor(Math.random() * 11), b: Math.floor(Math.random() * 11)};
+                    }
+                },
+            ],
+            "Variable Addition": [
+                {
+                    format: function(a, b) { return "x =  " + a + " + " + b; },
+                    answer: function(a, b) { return a - b; },
+                    customrandom: function() { 
+                        return {a: Math.floor(Math.random() * 11), b: Math.floor(Math.random() * 11)};
+                    }
+                },
+                {
+                    format: function(a, b) { return "x =  " + a + " + " + b; },
+                    answer: function(a, b) { return a - b; },
+                    customrandom: function() { 
+                        return {a: Math.floor(Math.random() * 11), b: Math.floor(Math.random() * 11)};
+                    }
+                }
+            ],
+            "Straight Subtraction": [
+                {
+                    format: function(a, b) { return "x =  " + a + " - " + b; },
+                    answer: function(a, b) { return a - b; },
+                    customrandom: function() { 
+                        return {a: Math.floor(Math.random() * 11), b: Math.floor(Math.random() * 11)};
+                    }
+                },
+            ],
+            "Variable Subtraction": [
+                {
+                    format: function(a, b) { return "x =  " + a + " - " + b; },
+                    answer: function(a, b) { return a + b; },
+                    customrandom: function() { 
+                        return {a: Math.floor(Math.random() * 11), b: Math.floor(Math.random() * 11)};
+                    }
+                },
+                {
+                    format: function(a, b) { return "x =  " + a + " - " + b; },
+                    answer: function(a, b) { return b - a; },
+                    customrandom: function() { 
+                        return {a: Math.floor(Math.random() * 11), b: Math.floor(Math.random() * 11)};
+                    }
+                },
+            ],
+            "Repeated Addition": [
+                {
+                    format: function(a, b) { 
+                        var str = (" + " + a).repeat(b-1);
+                        return "x =  " + a + str;
+                    },
+                    answer: function(a, b) { return a * b; },
+                    customrandom: function() { 
+                        return {a: Math.floor(Math.random() * 10) + 1, b: Math.floor(Math.random() * 5) + 1};
+                    }
+                },
+            ],
+
+        }
+    }
 
     function Listrender() {
         //renders the 5 most recent LaTeX strings into the list (only needs to run when Latex_List changes)
@@ -130,14 +205,17 @@ window.onload = function () {
     }
     function generateRandomLaTeX() {
         //generates a random LaTeX string and adds it to the list
-        var rn = Math.floor(Math.random() * 10);
+        //(placeholder)
+        var rn = 0;
         var randomLaTeX = [String.raw`x = ${rn}`, rn];
-        if(Math.random() < 0.1) {
-            randomLaTeX = [String.raw`x = SUCC(${rn})`, rn+1];
-        }
-        if(Math.random() < 0.01) {
-            randomLaTeX = [String.raw`x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}`, 0];
-        }
+
+        //var selectype = ["Straight Addition", "Variable Addition", "Straight Subtraction", "Variable Subtraction", "Repeated Addition"];
+        selectype = ["Repeated Addition"];
+        var selectedtype = selectype[Math.floor(Math.random() * selectype.length)];
+        
+        var vars = subproblemtypes["Basic Arithmetic"][selectedtype][0].customrandom();
+        randomLaTeX = [subproblemtypes["Basic Arithmetic"][selectedtype][0].format(vars.a, vars.b), subproblemtypes["Basic Arithmetic"][selectedtype][0].answer(vars.a, vars.b)];
+
         Latex_List.push(randomLaTeX);
         Listrender();
     }
@@ -146,11 +224,24 @@ window.onload = function () {
         //simplifying guess down to a number and checking if it matches the answer
         //just in case someone uses \frac or \cdot or other LaTex commands
         guess = guess.replace(/\\cdot/g, "*");
-        guess = guess.replace(/\\frac{([^}]*)}{([^}]*)}/g, "($1)/($2)");
-        guess = guess.replace(/\\sqrt{([^}]*)}/g, "Math.sqrt($1)");
+        guess = guess.replace(/\\frac{([^}]*)}{([^}]*)}/g, "( $1 )/( $2 )");
+        guess = guess.replace(/\\sqrt{([^}]*)}/g, "Math.sqrt( $1 )");
         guess = guess.replace(/\\left/g, "");
         guess = guess.replace(/\\right/g, "");
-        
+
+        //changing things like ln to Math.ln()
+        guess = guess.replace(/log\(([^)]*)\)/g, "Math.log( $1 )");
+        guess = guess.replace(/log_([^}]*)\(([^}]*)\)/g, "Math.log( $1 )/Math.log( $2 )");
+        guess = guess.replace(/sqrt/g, "Math.sqrt");
+        guess = guess.replace(/ln\(([^)]*)\)/g, "Math.log( $1 )/Math.log(Math.E)");
+        guess = guess.replace(/(^|\s)e($|\s)/g, "Math.E");
+        guess = guess.replace(/pi/g, "Math.PI");
+        guess = guess.replace(/(^|\s)sin\(([^)]*)\)/g, "Math.sin( $2 )");
+        guess = guess.replace(/(^|\s)cos\(([^)]*)\)/g, "Math.cos( $2 )");
+        guess = guess.replace(/(^|\s)tan\(([^)]*)\)/g, "Math.tan( $2 )");
+        guess = guess.replace(/\^/g, "**");
+        console.log("guess after replacements: " + guess);
+
         //convert guess to a number
         try {
             guess = eval(guess);
