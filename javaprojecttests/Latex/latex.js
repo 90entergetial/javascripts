@@ -93,6 +93,8 @@ window.onload = function () {
     var answer = String.raw`x = (?)`;
     var list = document.getElementById("list");
 
+    var stage = "Basic Arithmetic";
+
     var problemtypes = [
         "Basic Arithmetic",
         "Exponents",
@@ -104,6 +106,7 @@ window.onload = function () {
         "Basic Arithmetic": {
             "Straight Addition": [
                 {
+                    discovered: false,
                     format: function(a, b) { return "x =  " + a + " + " + b; },
                     answer: function(a, b) { return a + b; },
                     customrandom: function() { 
@@ -113,14 +116,16 @@ window.onload = function () {
             ],
             "Variable Addition": [
                 {
-                    format: function(a, b) { return "x =  " + a + " + " + b; },
+                    discovered: false,
+                    format: function(a, b) { return a + " = x + " + b; },
                     answer: function(a, b) { return a - b; },
                     customrandom: function() { 
                         return {a: Math.floor(Math.random() * 11), b: Math.floor(Math.random() * 11)};
                     }
                 },
                 {
-                    format: function(a, b) { return "x =  " + a + " + " + b; },
+                    discovered: false,
+                    format: function(a, b) { return a + " =  " + b + " + x"; },
                     answer: function(a, b) { return a - b; },
                     customrandom: function() { 
                         return {a: Math.floor(Math.random() * 11), b: Math.floor(Math.random() * 11)};
@@ -129,6 +134,7 @@ window.onload = function () {
             ],
             "Straight Subtraction": [
                 {
+                    discovered: false,
                     format: function(a, b) { return "x =  " + a + " - " + b; },
                     answer: function(a, b) { return a - b; },
                     customrandom: function() { 
@@ -138,14 +144,16 @@ window.onload = function () {
             ],
             "Variable Subtraction": [
                 {
-                    format: function(a, b) { return "x =  " + a + " - " + b; },
+                    discovered: false,
+                    format: function(a, b) { return a + " = x - " + b; },
                     answer: function(a, b) { return a + b; },
                     customrandom: function() { 
                         return {a: Math.floor(Math.random() * 11), b: Math.floor(Math.random() * 11)};
                     }
                 },
                 {
-                    format: function(a, b) { return "x =  " + a + " - " + b; },
+                    discovered: false,
+                    format: function(a, b) { return a + " = " + b + " - x"; },
                     answer: function(a, b) { return b - a; },
                     customrandom: function() { 
                         return {a: Math.floor(Math.random() * 11), b: Math.floor(Math.random() * 11)};
@@ -154,6 +162,7 @@ window.onload = function () {
             ],
             "Repeated Addition": [
                 {
+                    discovered: false,
                     format: function(a, b) { 
                         var str = (" + " + a).repeat(b-1);
                         return "x =  " + a + str;
@@ -209,8 +218,8 @@ window.onload = function () {
         var rn = 0;
         var randomLaTeX = [String.raw`x = ${rn}`, rn];
 
+        var selectype = Object.keys(subproblemtypes["Basic Arithmetic"]);
         //var selectype = ["Straight Addition", "Variable Addition", "Straight Subtraction", "Variable Subtraction", "Repeated Addition"];
-        selectype = ["Repeated Addition"];
         var selectedtype = selectype[Math.floor(Math.random() * selectype.length)];
         
         var vars = subproblemtypes["Basic Arithmetic"][selectedtype][0].customrandom();
