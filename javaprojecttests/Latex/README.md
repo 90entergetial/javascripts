@@ -6,3 +6,5 @@ Oct-10/14/2026 - Maybe I'll see if I can get latex in HTML... Don't konw if it's
  - stages, hopefluly, also a skip button that probably shouldnt be used
 
 Oct-10/15/2026 - Made a cool gradient with the main text in the middle, everything's a shade of blue
+
+Oct-10/16/2026 - Added simple addition and subtraction (x = a + b and x = a - b) and a input button
