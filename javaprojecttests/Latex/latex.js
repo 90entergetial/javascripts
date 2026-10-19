@@ -233,7 +233,10 @@ window.onload = function () {
         //simplifying guess down to a number and checking if it matches the answer
         //just in case someone uses \frac or \cdot or other LaTex commands
         guess = guess.replace(/\\cdot/g, "*");
-        guess = guess.replace(/\\frac{([^}]*)}{([^}]*)}/g, "( $1 )/( $2 )");
+        //innermost fractions first, so fractions inside fractions work
+        while(/\\frac{([^{}]*)}{([^{}]*)}/.test(guess)) {
+            guess = guess.replace(/\\frac{([^{}]*)}{([^{}]*)}/g, "( $1 )/( $2 )");
+        }
         guess = guess.replace(/\\sqrt{([^}]*)}/g, "Math.sqrt( $1 )");
         guess = guess.replace(/\\left/g, "");
         guess = guess.replace(/\\right/g, "");
@@ -278,7 +281,7 @@ window.onload = function () {
         answerb.style.color = "white";
     }
 
-    inputField.addEventListener("input", function() {
+    function updateAnswer() {
         if(inputField.value == "" || inputField.value.trim() == "") {
             answer = String.raw`x = (?)`;
             answerb.style.color = "rgba(255, 255, 255, 0.5)";
@@ -287,14 +290,95 @@ window.onload = function () {
             answerb.style.color = "white";
         }
         Latexrender();
-    });
+    }
+    inputField.addEventListener("input", updateAnswer);
 
-    // keep the cursor pinned to the end of the input, since the user can't see it
+    // number of characters after the cursor (the closing brackets of any fractions we're inside)
+    var tail = 0;
+
+    // keep the cursor pinned to the end of the input (before any closing brackets), since the user can't see it
     function cursorToEnd() {
-        var end = inputField.value.length;
+        tail = Math.min(tail, inputField.value.length);
+        var end = inputField.value.length - tail;
         if(inputField.selectionStart !== end || inputField.selectionEnd !== end) {
             inputField.setSelectionRange(end, end);
         }
+    }
+
+    // finds the index of the opening bracket matching the closing bracket at s[i], or -1
+    function matchBack(s, i) {
+        var close = s[i], open = close === ")" ? "(" : "{", depth = 0;
+        for(var j = i; j >= 0; j--) {
+            if(s[j] === close) depth++;
+            else if(s[j] === open && --depth === 0) return j;
+        }
+        return -1;
+    }
+    // finds where the "thing" ending at s[end - 1] starts: a number/variable, a (...) group, or a \command{...}{...}
+    function atomStart(s, end) {
+        var c = s[end - 1];
+        if(c === ")" || c === "}") {
+            var j = matchBack(s, end - 1);
+            if(j < 0) return end;
+            while(c === "}" && s[j - 1] === "}") { //\frac{a}{b} has two groups
+                var k = matchBack(s, j - 1);
+                if(k < 0) break;
+                j = k;
+            }
+            var command = s.slice(0, j).match(/\\[a-zA-Z]+$/);
+            if(command) j -= command[0].length;
+            return j;
+        }
+        var start = end;
+        while(start > 0 && /[A-Za-z0-9.]/.test(s[start - 1])) start--;
+        return start;
+    }
+    // finds where the numerator starts, including exponents like 3^x or 2^{10}
+    function numeratorStart(s) {
+        var start = atomStart(s, s.length);
+        while(start < s.length && (s[start - 1] === "^" || s[start - 1] === "_")) {
+            var next = atomStart(s, start - 1);
+            if(next === start - 1) break;
+            start = next;
+        }
+        return start;
+    }
+
+    // turns "8/" into "\frac{8}{|}" with the cursor in the denominator
+    function makeFraction() {
+        var pos = inputField.value.length - tail;
+        var before = inputField.value.slice(0, pos).replace(/\s+$/, "");
+        var after = inputField.value.slice(pos);
+        var start = numeratorStart(before);
+        var numerator = before.slice(start);
+        if(numerator === "") {
+            //nothing to put on top, so start in the numerator: \frac{|}{}
+            inputField.value = before + String.raw`\frac{` + "}{}" + after;
+            tail += 3;
+        } else {
+            inputField.value = before.slice(0, start) + String.raw`\frac{` + numerator + "}{" + "}" + after;
+            tail += 1;
+        }
+    }
+    // backspacing an empty bracket undoes the fraction
+    function undoFraction() {
+        var pos = inputField.value.length - tail;
+        var before = inputField.value.slice(0, pos);
+        var after = inputField.value.slice(pos);
+        if(before.endsWith(String.raw`\frac{`)) { //empty numerator: \frac{|}{}
+            inputField.value = before.slice(0, -6) + after.slice(3);
+            tail -= 3;
+            return true;
+        }
+        if(before.endsWith("}{")) { //empty denominator: \frac{8}{|}
+            var open = matchBack(before, before.length - 2);
+            if(open >= 5 && before.slice(open - 5, open) === String.raw`\frac`) {
+                inputField.value = before.slice(0, open - 5) + before.slice(open + 1, -2) + after.slice(1);
+                tail -= 1;
+                return true;
+            }
+        }
+        return false;
     }
     inputField.addEventListener("mousedown", function(event) {
         event.preventDefault(); // stops clicking/dragging from placing the cursor
@@ -305,16 +389,33 @@ window.onload = function () {
         inputField.addEventListener(type, cursorToEnd);
     });
     inputField.addEventListener("keydown", function(event) {
+        //right arrow steps out of a bracket (from numerator straight into the denominator)
+        if(event.key === "ArrowRight" && tail > 0) {
+            tail -= inputField.value.slice(-tail).startsWith("}{") ? 2 : 1;
+        }
         //cursor to end
-        if(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) {
+        if(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End", "Delete"].includes(event.key)) {
             event.preventDefault();
             cursorToEnd();
+        }
+        //fractions
+        if(event.key === "/") {
+            event.preventDefault();
+            makeFraction();
+            cursorToEnd();
+            updateAnswer();
+        }
+        if(event.key === "Backspace" && undoFraction()) {
+            event.preventDefault();
+            cursorToEnd();
+            updateAnswer();
         }
         //entering an answer
         if(event.key === "Enter" && !(inputField.value == "" || inputField.value.trim() == "")) {
             if(check(inputField.value.trim())) {
                 nextLaTeX();
                 inputField.value = "";
+                tail = 0;
                 answer = String.raw`x = (?)`;
                 answerb.style.color = "rgba(255, 255, 255, 0.5)";
                 Latexrender();

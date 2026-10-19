@@ -10,3 +10,5 @@ Oct-10/15/2026 - Made a cool gradient with the main text in the middle, everythi
 Oct-10/16/2026 - Added simple addition and subtraction (x = a + b and x = a - b) and a input button
 
 Oct-10/18/2026 - I mispelled "know". This a very important update
+
+Oct-10/19/2026 - Fractions are displayed properly
