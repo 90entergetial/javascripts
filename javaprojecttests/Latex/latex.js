@@ -288,7 +288,29 @@ window.onload = function () {
         }
         Latexrender();
     });
+
+    // keep the cursor pinned to the end of the input, since the user can't see it
+    function cursorToEnd() {
+        var end = inputField.value.length;
+        if(inputField.selectionStart !== end || inputField.selectionEnd !== end) {
+            inputField.setSelectionRange(end, end);
+        }
+    }
+    inputField.addEventListener("mousedown", function(event) {
+        event.preventDefault(); // stops clicking/dragging from placing the cursor
+        inputField.focus();
+        cursorToEnd();
+    });
+    ["focus", "select", "keyup", "selectionchange"].forEach(function(type) {
+        inputField.addEventListener(type, cursorToEnd);
+    });
     inputField.addEventListener("keydown", function(event) {
+        //cursor to end
+        if(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) {
+            event.preventDefault();
+            cursorToEnd();
+        }
+        //entering an answer
         if(event.key === "Enter" && !(inputField.value == "" || inputField.value.trim() == "")) {
             if(check(inputField.value.trim())) {
                 nextLaTeX();
