@@ -214,12 +214,14 @@ window.onload = function () {
     }
     function generateRandomLaTeX() {
         //generates a random LaTeX string and adds it to the list
+
         //(placeholder)
         var rn = 0;
         var randomLaTeX = [String.raw`x = ${rn}`, rn];
 
+        //--------------------------------
+        //Looks at all subproblem types in a problem type and randomly selects one that has been discovered
         var selectype = Object.keys(subproblemtypes["Basic Arithmetic"]);
-        //var selectype = ["Straight Addition", "Variable Addition", "Straight Subtraction", "Variable Subtraction", "Repeated Addition"];
         var selectedtype = selectype[Math.floor(Math.random() * selectype.length)];
         
         var vars = subproblemtypes["Basic Arithmetic"][selectedtype][0].customrandom();
@@ -430,6 +432,20 @@ window.onload = function () {
             }
         }
     });
+    
+    //toggles UI
+    function toggleUI() {
+        var UI = document.getElementById("UI");
+        UI.style.top = "-50%";
+        if(UI.style.visibility == "hidden"){
+            UI.style.visibility = "inherit";
+            UI.style.top = "50%";
+        } else {
+            UI.style.visibility = "hidden";
+        }
+    }
+    var UIbutton = document.getElementById("UIToggle");
+    UIbutton.addEventListener("click", toggleUI);
 
 };
 //we set the dark on fire
