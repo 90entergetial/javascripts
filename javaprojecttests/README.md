@@ -31,3 +31,5 @@ Suraida - The interactive puzzle version of HEROIII's co-op sliding puzzle maps 
 Oct-10/5/2026 - Added all of this to Github for once. Started on this exact README file.
 
 Oct-10/6/2026 - Continuing making the README files.
+
+Oct-10/20/2026 - For the projects that dont use the canvas (like 'Latex') I made a seperate preset because that can actually be used.
