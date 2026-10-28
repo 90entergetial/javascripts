@@ -127,7 +127,7 @@ window.onload = function () {
         document.getElementById("runtime").style.color = "rgb(228, 92, 92)";
         }
         if(counterdowner == 0){
-            counterdowner = 1;
+            counterdowner = 120;
             if(!finallysolved){
                 updateafter /= 2;
                 //console.log("updateafter: " + updateafter);

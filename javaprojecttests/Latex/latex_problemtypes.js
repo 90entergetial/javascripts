@@ -78,6 +78,7 @@
                     customrandom: function() { 
                         return {a: Math.floor(Math.random() * 11), b: Math.floor(Math.random() * 11)};
                     }
+                    
                 },
             ],
 
