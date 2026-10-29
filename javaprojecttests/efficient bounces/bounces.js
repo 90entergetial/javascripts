@@ -27,20 +27,25 @@ window.onload = function () {
     var box = {
         w:600,
         h:900,
-        elastic: 0,
-        blocks: [10n, 10n**10n, 10n**100n],
+        elastic: 5,
+        blocks: [10n, 10n**100n, 10n**10000n],
     }
 
     var ball = {
-        gravity:10.5,
+        gravity:0.1,
         r:20,
         x:0,
-        y:400,
-        dx:10,
+        y:300,
+        dx:4,
         dy:4,
-        bounciness: 1.01,
+        bounciness: 0.5,
         damage: 1n,
         hits: 0,
+        Bhits: 0n,
+        note: function (n){return 2**((94+n-1)/12)},
+        sequence: function (N){
+            return 5n ** N;
+        }
     }
 
     var heights = [];
@@ -94,11 +99,11 @@ window.onload = function () {
     }
     function damage(i, B, sound) {
         B.hits += 1;
+        B.Bhits += 1n;
         box.blocks[i] -= B.damage;
-        B.damage += B.damage/10000n;
-        B.damage += 1n;
+        B.damage = ball.sequence(B.Bhits);
         if(box.blocks[i] <= 0) playNote([1000, 8000], 0.2, 0, 10, 200);
-        else if(sound && B.hits <= 1000) playNote(2**((94+B.hits/8)/12), 0.2, 0, 100, 100);
+        else if(sound && ball.note(B.hits) <= 1000000) playNote(ball.note(B.hits), 0.2, 0, 100, 100);
         box.blocks[i] = cst(box.blocks[i], 0, box.blocks[i]);
     }
 
@@ -178,7 +183,7 @@ window.onload = function () {
 
             B.y = fl.y;
             if(fl.block < 0){ // all blocks gone: fixed hop of speed = gravity (lasts 2 frames)
-                B.dy = g*10;
+                B.dy = a*10;
                 continue;
             }
             if(Math.abs(vHit) < REST_SPEED){ // already resting on the floor
@@ -202,7 +207,6 @@ window.onload = function () {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         step(ball);
-
         //bg
         ctx.fillStyle = "rgb(222, 226, 240)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);

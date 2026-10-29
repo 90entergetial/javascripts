@@ -62,6 +62,20 @@ function cst(num, min, max) {
 function addcommas(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
+function bigaddcommas(num) {
+    var neg = num < 0n;
+    var abs = neg ? -num : num;
+    if (abs <= 10n**12n) return addcommas(num);
+
+    var digits = abs.toString();
+    var exp = digits.length - 1;
+    // keep 9 significant digits, rounding with the 10th
+    var mant = BigInt(digits.slice(0, 9));
+    if (digits[9] >= "5") mant += 1n;
+    if (mant == 10n**9n) { mant = 10n**8n; exp += 1; } // rounded up to 10.00000000
+    var m = mant.toString();
+    return (neg ? "-" : "") + m[0] + "." + m.slice(1) + "e" + exp;
+}
 function pointonbox(x, y, boxx, boxy, boxw, boxh) {
     return x > boxx && x < boxx+boxw && y > boxy && y < boxy+boxh;
 }
