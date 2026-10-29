@@ -39,21 +39,47 @@ window.onload = function () {
         dx:10,
         dy:4,
         bounciness: 0.5,
+        damage: 1,
+        hits: 0,
     }
 
+    var heights = [];
+    for(var i = 0; i < box.blocks.length; i++){
+        heights.push(150*((i)-box.blocks.length/2))
+    }
     function blocks() {
         var blocks = document.getElementById("blocks");
-        var heights = [];
-        for(var i = 0; i < box.blocks.length; i++){
-            
+        while(blocks.children.length < box.blocks.length){
+            const para = document.createElement("p");
+            para.style.position = "absolute";
+            para.style.color = "rgb(0, 0, 0)";
+            para.style.fontSize = "50px";
+            para.style.transform = "translate(-50%, -50%)";
+            blocks.appendChild(para);
         }
         for(var i = 0; i < box.blocks.length; i++){
+            var block = blocks.children[i];
+            if(box.blocks[i] == 0) {
+                block.innerHTML = " ";
+                continue;
+            }
+            block.innerHTML = box.blocks[i];
+            block.style.left = canvas.width/2 + "px";
+            block.style.top  = (canvas.height/2 + heights[i] + 75) + "px";
+
             ctx.fillStyle = "rgb(19, 19, 20)";
-            ctx.fillRect(canvas.width/2-box.w/2,canvas.height/2-75, box.w, 150);
+            ctx.fillRect(canvas.width/2-box.w/2,canvas.height/2+heights[i], box.w, 151);
             ctx.fillStyle = "rgb(222, 226, 240)";
-            ctx.fillRect(canvas.width/2-box.w/2+10,canvas.height/2-65, box.w-20, 130);
+            ctx.fillRect(canvas.width/2-box.w/2+10,canvas.height/2+10+heights[i], box.w-20, 130);
         }
 
+    }
+    function damage(i, B) {
+        B.hits += 1;
+        box.blocks[i] -= B.damage;
+        if(box.blocks[i] <= 0) playNote([1000, 8000], 0.2, 0, 10, 200);
+        else playNote(2**((94+B.hits/4)/12), 0.2, 0, 100, 100);
+        box.blocks[i] = cst(box.blocks[i], 0, box.blocks[i]);
     }
 
     function step(B) {
@@ -65,6 +91,16 @@ window.onload = function () {
             B.dy = cst(Math.abs(B.dy*B.bounciness), box.elastic, 1000000000000) * -sign(B.dy);
             this.diff = Math.abs((box.h/2)-(Math.abs(B.y)+B.r))
             B.y += 2*this.diff * sign(B.dy);
+        }
+        for(var i = 0; i < box.blocks.length; i++){
+            if(box.blocks[i] == 0) continue;
+            if(-B.y+B.r > heights[i]){
+                B.dy = cst(Math.abs(B.dy*B.bounciness), box.elastic, 1000000000000) * -sign(B.dy);
+                this.diff = Math.abs((heights[i])-(-B.y+B.r))
+                B.y += 2*this.diff * sign(B.dy);
+                damage(i, B);
+            }
+            break;
         }
         if(Math.abs(B.x)+B.r > box.w/2){
             B.dx = -B.dx;
