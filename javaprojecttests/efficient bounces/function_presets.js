@@ -1,8 +1,6 @@
 // Before the main .js in the HTML:
 // <script src="function_presets.js"></script>
 
-// frequency: a number (e.g. 440) for a normal tone,
-// or [min, max] (e.g. [200, 4000]) for noise made of every frequency in that range (drums, hiss, etc.)
 function playNote(frequency, volume, fade_in_time, sustain_time, fade_out_time) {
     var gainNode = audioCtx.createGain();
     gainNode.connect(audioCtx.destination);

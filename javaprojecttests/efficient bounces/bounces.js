@@ -26,19 +26,19 @@ window.onload = function () {
     
     var box = {
         w:600,
-        h:1000,
-        elastic: 10,
-        blocks: [10, 100, 1000],
+        h:900,
+        elastic: 0,
+        blocks: [10, 1000, 10**100],
     }
 
     var ball = {
-        gravity:0.5,
+        gravity:10.5,
         r:20,
         x:0,
         y:400,
         dx:10,
         dy:4,
-        bounciness: 0.5,
+        bounciness: 0.98,
         damage: 1,
         hits: 0,
     }
@@ -63,7 +63,7 @@ window.onload = function () {
                 block.innerHTML = " ";
                 continue;
             }
-            block.innerHTML = box.blocks[i];
+            block.innerHTML = addcommas(box.blocks[i]);
             block.style.left = canvas.width/2 + "px";
             block.style.top  = (canvas.height/2 + heights[i] + 75) + "px";
 
@@ -73,41 +73,112 @@ window.onload = function () {
             ctx.fillRect(canvas.width/2-box.w/2+10,canvas.height/2+10+heights[i], box.w-20, 130);
         }
 
+        var damage = document.getElementById("damage");
+        damage.style.color = "rgb(0, 0, 0)";
+        damage.style.top = (canvas.height/2-box.h/2-10) + "px";
+        damage.style.left = (canvas.width/2-box.w/2) + "px";
+        damage.style.transform = "translate(0%, -100%)";
+        damage.style.padding = "0px";
+        damage.style.fontSize = "60px";
+        damage.innerHTML = "Power: " + addcommas(ball.damage);
+
     }
     function damage(i, B) {
         B.hits += 1;
         box.blocks[i] -= B.damage;
+        B.damage *= 2;
         if(box.blocks[i] <= 0) playNote([1000, 8000], 0.2, 0, 10, 200);
-        else playNote(2**((94+B.hits/4)/12), 0.2, 0, 100, 100);
+        else playNote(2**((94+B.hits/8)/12), 0.2, 0, 100, 100);
         box.blocks[i] = cst(box.blocks[i], 0, box.blocks[i]);
     }
 
-    function step(B) {
-        B.dy -= B.gravity;
-
-        B.x += B.dx;
-        B.y += B.dy;
-        if(Math.abs(B.y)+B.r > box.h/2){
-            B.dy = cst(Math.abs(B.dy*B.bounciness), box.elastic, 1000000000000) * -sign(B.dy);
-            this.diff = Math.abs((box.h/2)-(Math.abs(B.y)+B.r))
-            B.y += 2*this.diff * sign(B.dy);
-        }
+    // The y the ball's center sits at when touching the floor:
+    // the top of the first live block, or the bottom of the box if none are left.
+    function floorY(B) {
         for(var i = 0; i < box.blocks.length; i++){
-            if(box.blocks[i] == 0) continue;
-            if(-B.y+B.r > heights[i]){
-                B.dy = cst(Math.abs(B.dy*B.bounciness), box.elastic, 1000000000000) * -sign(B.dy);
-                this.diff = Math.abs((heights[i])-(-B.y+B.r))
-                B.y += 2*this.diff * sign(B.dy);
-                damage(i, B);
-            }
-            break;
+            if(box.blocks[i] != 0) return { y: B.r - heights[i], block: i };
         }
+        return { y: -box.h/2 + B.r, block: -1 };
+    }
+
+    function bounceSpeed(v, B) {
+        return cst(Math.abs(v*B.bounciness), box.elastic, 1000000000000);
+    }
+
+    const REST_SPEED = 0.01; // bounces slower than this count as "at rest"
+    const MAX_HITS_PER_STEP = 1000; // safety cap so a step can never loop forever
+
+    function step(B) {
+        // x has no acceleration, so mirroring the overshoot is already exact
+        B.x += B.dx;
         if(Math.abs(B.x)+B.r > box.w/2){
             B.dx = -B.dx;
-            this.diff = Math.abs((box.w/2)-(Math.abs(B.x)+B.r))
-            B.x += 2 * this.diff * sign(B.dx);
+            var diff = Math.abs((box.w/2)-(Math.abs(B.x)+B.r));
+            B.x += 2 * diff * sign(B.dx);
         }
 
+        // y: move along the exact curve  y(t) = y0 + v0*t - g*t^2/2  for one frame (t from 0 to 1).
+        // If it hits something partway, stop at the moment of contact, bounce,
+        // then use the rest of the frame with the new velocity.
+        var g = B.gravity;
+        var ceil = box.h/2 - B.r;
+        var T = 1; // time left in this frame
+
+        for(var n = 0; n < MAX_HITS_PER_STEP && T > 0; n++){
+            var fl = floorY(B);
+            var y0 = B.y, v0 = B.dy;
+            var tHit = Infinity, hit = 0; // hit: -1 floor, 1 ceiling
+
+            // floor: does the ball end the remaining time below it?
+            var yEnd = y0 + v0*T - g*T*T/2;
+            if(yEnd < fl.y){
+                var d = Math.max(0, y0 - fl.y);
+                var root = Math.sqrt(v0*v0 + 2*g*d);
+                if(v0 > 0) tHit = (v0 + root) / g;               // going up first, then comes down
+                else if(root - v0 > 0) tHit = 2*d / (root - v0); // already falling
+                else tHit = 0;                                   // sitting on the floor, not moving
+                hit = -1;
+            }
+
+            // ceiling: does the ball reach it before slowing to a stop?
+            if(v0 > 0){
+                var dc = Math.max(0, ceil - y0);
+                var disc = v0*v0 - 2*g*dc;
+                if(disc >= 0){
+                    var tc = 2*dc / (v0 + Math.sqrt(disc));
+                    if(tc <= T && tc < tHit){ tHit = tc; hit = 1; }
+                }
+            }
+
+            if(hit == 0){ // nothing hit for the rest of the frame
+                B.y = yEnd;
+                B.dy = v0 - g*T;
+                break;
+            }
+
+            // advance to the moment of contact
+            var vHit = v0 - g*tHit; // velocity at contact
+            T -= tHit;
+
+            if(hit == 1){
+                B.y = ceil;
+                B.dy = -bounceSpeed(vHit, B);
+                continue;
+            }
+
+            B.y = fl.y;
+            if(Math.abs(vHit) < REST_SPEED){ // already resting on the floor
+                B.dy = 0;
+                break;
+            }
+            if(fl.block >= 0) damage(fl.block, B);
+            var vOut = bounceSpeed(vHit, B);
+            if(vOut < REST_SPEED){ // too slow to leave the floor
+                B.dy = 0;
+                break;
+            }
+            B.dy = vOut;
+        }
     }
 
     function update() {
