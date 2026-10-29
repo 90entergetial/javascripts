@@ -14,7 +14,8 @@
         height: 100%;
     }
     p {
-        position: relative; 
+        position: absolute;
+        text-align:left;
         top:10px;
         z-index: 1;
         color: white; 
@@ -22,10 +23,6 @@
         font-family: monospace, sans-serif;
         font-weight: bold;
         margin:0px;
-    }
-    #damage {
-        position: absolute;
-        text-align:left;
     }
     </style>
 </head>
@@ -35,5 +32,6 @@
     <script src="bounces.js"></script>
     <div id="blocks"></div>
     <p id="damage">Damage: NaN</p>
+    <p id="hits">Hits: NaN</p>
 </body>
 </html>

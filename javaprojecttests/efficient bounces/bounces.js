@@ -28,7 +28,7 @@ window.onload = function () {
         w:600,
         h:900,
         elastic: 0,
-        blocks: [10, 1000, 10**100],
+        blocks: [10n, 10n**10n, 10n**100n],
     }
 
     var ball = {
@@ -38,8 +38,8 @@ window.onload = function () {
         y:400,
         dx:10,
         dy:4,
-        bounciness: 0.98,
-        damage: 1,
+        bounciness: 1.01,
+        damage: 1n,
         hits: 0,
     }
 
@@ -63,7 +63,7 @@ window.onload = function () {
                 block.innerHTML = " ";
                 continue;
             }
-            block.innerHTML = addcommas(box.blocks[i]);
+            block.innerHTML = bigaddcommas(box.blocks[i]);
             block.style.left = canvas.width/2 + "px";
             block.style.top  = (canvas.height/2 + heights[i] + 75) + "px";
 
@@ -80,15 +80,25 @@ window.onload = function () {
         damage.style.transform = "translate(0%, -100%)";
         damage.style.padding = "0px";
         damage.style.fontSize = "60px";
-        damage.innerHTML = "Power: " + addcommas(ball.damage);
+        damage.innerHTML = "Power: " + bigaddcommas(ball.damage);
+
+        var damage = document.getElementById("hits");
+        damage.style.color = "rgb(0, 0, 0)";
+        damage.style.top = (canvas.height/2+box.h/2-10) + "px";
+        damage.style.left = (canvas.width/2-box.w/2) + "px";
+        damage.style.transform = "translate(0%, 50%)";
+        damage.style.padding = "0px";
+        damage.style.fontSize = "60px";
+        damage.innerHTML = "Hits: " + addcommas(ball.hits);
 
     }
-    function damage(i, B) {
+    function damage(i, B, sound) {
         B.hits += 1;
         box.blocks[i] -= B.damage;
-        B.damage *= 2;
+        B.damage += B.damage/10000n;
+        B.damage += 1n;
         if(box.blocks[i] <= 0) playNote([1000, 8000], 0.2, 0, 10, 200);
-        else playNote(2**((94+B.hits/8)/12), 0.2, 0, 100, 100);
+        else if(sound && B.hits <= 1000) playNote(2**((94+B.hits/8)/12), 0.2, 0, 100, 100);
         box.blocks[i] = cst(box.blocks[i], 0, box.blocks[i]);
     }
 
@@ -105,8 +115,8 @@ window.onload = function () {
         return cst(Math.abs(v*B.bounciness), box.elastic, 1000000000000);
     }
 
-    const REST_SPEED = 0.01; // bounces slower than this count as "at rest"
-    const MAX_HITS_PER_STEP = 1000; // safety cap so a step can never loop forever
+    const REST_SPEED = 0.001; // bounces slower than this count as "at rest"
+    const MAX_HITS_PER_STEP = 200000000; // safety cap so a step can never loop forever
 
     function step(B) {
         // x has no acceleration, so mirroring the overshoot is already exact
@@ -167,18 +177,25 @@ window.onload = function () {
             }
 
             B.y = fl.y;
+            if(fl.block < 0){ // all blocks gone: fixed hop of speed = gravity (lasts 2 frames)
+                B.dy = g*10;
+                continue;
+            }
             if(Math.abs(vHit) < REST_SPEED){ // already resting on the floor
                 B.dy = 0;
                 break;
             }
-            if(fl.block >= 0) damage(fl.block, B);
+            if(fl.block >= 0 && n < 10) damage(fl.block, B, true);
+            else if(fl.block >= 0) damage(fl.block, B, false);
             var vOut = bounceSpeed(vHit, B);
             if(vOut < REST_SPEED){ // too slow to leave the floor
                 B.dy = 0;
+                worked = false;
                 break;
             }
             B.dy = vOut;
         }
+
     }
 
     function update() {
