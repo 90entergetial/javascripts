@@ -28,22 +28,25 @@ window.onload = function () {
         w:600,
         h:900,
         elastic: 0.0001,
-        blocks: [1n, 10n**10n, 10n**20n],
+        blocks: [100n, 10n**5n, 10n**10n],
     }
 
     var ball = {
-        gravity:0.9,
+        gravity:0.6,
         r:20,
         x:0,
         y:300,
         dx:4,
         dy:10,
-        bounciness: 1.1,
-        bouncemax: Infinity,
+        bounciness: 0.995,
+        bouncemax: 8,
         damage: 1n,
         hits: 0,
         Bhits: 0n,
-        note: function (n){return 2**((93)/12)+n;},
+        note: function (n){
+            var sounds = [92,96,99,101,103,104,108,104,103,101,99,96,92,91];
+            return 2**((sounds[n%(sounds.length)]+(Math.floor(n/(14*5))%12)*2)/12);
+        },
         sequence: function (N){
             return (N * (N-1n))/2n;
         }
@@ -104,7 +107,7 @@ window.onload = function () {
         box.blocks[i] -= B.damage;
         B.damage = ball.sequence(B.Bhits);
         if(box.blocks[i] <= 0) playNote([1000, 8000], 0.2, 0, 10, 200);
-        else if(sound && ball.note(B.hits) <= 1000000) playNote(ball.note(B.hits), 0.2, 0, 100, 100);
+        else if(sound && ball.note(B.hits) <= 1000000) playNote(ball.note(B.hits), 0.2, 0, 0, 100);
         box.blocks[i] = cst(box.blocks[i], 0, box.blocks[i]);
     }
 
@@ -123,7 +126,6 @@ window.onload = function () {
 
     const REST_SPEED = 0.00001; // bounces slower than this count as "at rest"
     const MAX_HITS_PER_STEP = 2000000; // safety cap so a step can never loop forever
-    var last_small_step = Infinity;
 
     function step(B) {
         // x has no acceleration, so mirroring the overshoot is already exact
@@ -141,8 +143,6 @@ window.onload = function () {
         var ceil = box.h/2 - B.r;
         var T = 1; // time left in this frame
 
-        var over_max = true;//If it goes over the amount of hits
-        small_last_small_step = Infinity;
         for(var n = 0; n < MAX_HITS_PER_STEP && T > 0; n++){
             var fl = floorY(B);
             var y0 = B.y, v0 = B.dy;
@@ -172,14 +172,12 @@ window.onload = function () {
             if(hit == 0){ // nothing hit for the rest of the frame
                 B.y = yEnd;
                 B.dy = v0 - g*T;
-                over_max = false;
                 break;
             }
 
             // advance to the moment of contact
             var vHit = v0 - g*tHit; // velocity at contact
             T -= tHit;
-            if(tHit != 0) small_last_small_step = tHit;
 
             if(hit == 1){
                 B.y = ceil;
@@ -194,7 +192,6 @@ window.onload = function () {
             }
             if(Math.abs(vHit) < REST_SPEED){ // already resting on the floor
                 B.dy = 0;
-                over_max = false;
                 break;
             }
             if(fl.block >= 0 && n < 10) damage(fl.block, B, true);
@@ -202,17 +199,9 @@ window.onload = function () {
             var vOut = bounceSpeed(vHit, B);
             if(vOut < REST_SPEED){ // too slow to leave the floor
                 B.dy = 0;
-                over_max = false;
                 break;
             }
             B.dy = vOut;
-        }
-        if(small_last_small_step != Infinity) last_small_step = small_last_small_step;
-        if(over_max){
-            //more than the amount of simulated bounces were used, now approximating the rest of the bounces
-            console.log(T);
-            console.log(last_small_step);
-            console.log("Predicted bounces: " + (T/last_small_step));
         }
 
     }

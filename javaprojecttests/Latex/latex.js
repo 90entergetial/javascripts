@@ -217,7 +217,7 @@ window.onload = function () {
 
     // keep the cursor pinned to the end of the input (before any closing brackets), since the user can't see it
     function cursorToEnd() {
-        tail = Math.min(tail, inputField.value.length);
+        tail = Math.max(0, Math.min(tail, inputField.value.length));
         var end = inputField.value.length - tail;
         if(inputField.selectionStart !== end || inputField.selectionEnd !== end) {
             inputField.setSelectionRange(end, end);
@@ -284,12 +284,13 @@ window.onload = function () {
         var pos = inputField.value.length - tail;
         var before = inputField.value.slice(0, pos);
         var after = inputField.value.slice(pos);
-        if(before.endsWith(String.raw`\frac{`)) { //empty numerator: \frac{|}{}
+        //only when the cursor is really inside the brackets (after stepping out, the closing brackets are already deleted)
+        if(before.endsWith(String.raw`\frac{`) && after.startsWith("}{}")) { //empty numerator: \frac{|}{}
             inputField.value = before.slice(0, -6) + after.slice(3);
             tail -= 3;
             return true;
         }
-        if(before.endsWith("}{")) { //empty denominator: \frac{8}{|}
+        if(before.endsWith("}{") && after.startsWith("}")) { //empty denominator: \frac{8}{|}
             var open = matchBack(before, before.length - 2);
             if(open >= 5 && before.slice(open - 5, open) === String.raw`\frac`) {
                 inputField.value = before.slice(0, open - 5) + before.slice(open + 1, -2) + after.slice(1);
@@ -328,6 +329,11 @@ window.onload = function () {
             event.preventDefault();
             cursorToEnd();
             updateAnswer();
+        } else if(event.key === "Backspace" && inputField.value.slice(0, inputField.value.length - tail).endsWith("}")) {
+            //backspace steps back into a bracket instead of deleting it (the opposite of right arrow)
+            event.preventDefault();
+            tail += 1;
+            cursorToEnd();
         }
         //entering an answer
         if(event.key === "Enter" && !(inputField.value == "" || inputField.value.trim() == "")) {

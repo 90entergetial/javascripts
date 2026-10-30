@@ -15,3 +15,5 @@ Oct-10/19/2026 - Fractions are displayed properly
  - Added a 'store' button of sorts, called it "ui" beacuse I don't know what else to call it really, it's not a "user interface" since that's like the entire page, but y'know..
 
 Oct-10/20/2026 - Put the problemtypes in a differet .js file so I don't clutter the main one so much
+
+Oct-10/30/2026 - Fractions now properly delete
