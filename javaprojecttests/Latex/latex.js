@@ -157,6 +157,8 @@ window.onload = function () {
             guess = guess.replace(/\\frac{([^{}]*)}{([^{}]*)}/g, "( $1 )/( $2 )");
         }
         guess = guess.replace(/\\sqrt{([^}]*)}/g, "Math.sqrt( $1 )");
+        //any brackets left (like exponents 2^{10}) are just grouping
+        guess = guess.replace(/{/g, "(").replace(/}/g, ")");
         guess = guess.replace(/\\left/g, "");
         guess = guess.replace(/\\right/g, "");
 
@@ -210,7 +212,11 @@ window.onload = function () {
         }
         Latexrender();
     }
-    inputField.addEventListener("input", updateAnswer);
+    inputField.addEventListener("input", function() {
+        cleanBrackets();
+        cursorToEnd();
+        updateAnswer();
+    });
 
     // number of characters after the cursor (the closing brackets of any fractions we're inside)
     var tail = 0;
@@ -279,11 +285,57 @@ window.onload = function () {
             tail += 1;
         }
     }
-    // backspacing an empty bracket undoes the fraction
+    // turns "e^" into "e^{|}", but only after a letter, digit, or closing bracket
+    function makeExponent() {
+        var pos = inputField.value.length - tail;
+        var before = inputField.value.slice(0, pos);
+        if(!/[A-Za-z0-9)\]}]$/.test(before)) return;
+        inputField.value = before + "^{}" + inputField.value.slice(pos);
+        tail += 1;
+    }
+    // removes brackets that lost their partner (like after command+delete wipes everything before the cursor)
+    function cleanBrackets() {
+        var s = inputField.value, pos = s.length - tail;
+        var removed = new Array(s.length).fill(false);
+        var changed = true;
+        while(changed) {
+            changed = false;
+            var stack = [];
+            for(var i = 0; i < s.length; i++) {
+                if(removed[i]) continue;
+                if(s[i] === "{") stack.push(i);
+                else if(s[i] === "}") {
+                    if(stack.length === 0) { removed[i] = true; changed = true; continue; } //stray "}"
+                    var open = stack.pop();
+                    //a "{" only belongs after \frac, ^, or the "}" of a numerator
+                    var prev = open - 1;
+                    while(prev >= 0 && removed[prev]) prev--;
+                    var valid = (prev >= 0 && (s[prev] === "^" || s[prev] === "}")) || s.slice(0, prev + 1).endsWith(String.raw`\frac`);
+                    if(!valid) { removed[open] = removed[i] = true; changed = true; }
+                }
+            }
+            stack.forEach(function(i) { removed[i] = true; changed = true; }); //stray "{"
+        }
+        if(!removed.includes(true)) return;
+        var result = "", newTail = 0;
+        for(var i = 0; i < s.length; i++) {
+            if(removed[i]) continue;
+            result += s[i];
+            if(i >= pos) newTail++;
+        }
+        inputField.value = result;
+        tail = newTail;
+    }
+    // backspacing an empty bracket undoes the fraction or exponent
     function undoFraction() {
         var pos = inputField.value.length - tail;
         var before = inputField.value.slice(0, pos);
         var after = inputField.value.slice(pos);
+        if(before.endsWith("^{") && after.startsWith("}")) { //empty exponent: e^{|}
+            inputField.value = before.slice(0, -2) + after.slice(1);
+            tail -= 1;
+            return true;
+        }
         //only when the cursor is really inside the brackets (after stepping out, the closing brackets are already deleted)
         if(before.endsWith(String.raw`\frac{`) && after.startsWith("}{}")) { //empty numerator: \frac{|}{}
             inputField.value = before.slice(0, -6) + after.slice(3);
@@ -324,6 +376,17 @@ window.onload = function () {
             makeFraction();
             cursorToEnd();
             updateAnswer();
+        }
+        //exponents
+        if(event.key === "^") {
+            event.preventDefault();
+            makeExponent();
+            cursorToEnd();
+            updateAnswer();
+        }
+        //typed brackets would break the bracket checks
+        if(event.key === "{" || event.key === "}") {
+            event.preventDefault();
         }
         if(event.key === "Backspace" && undoFraction()) {
             event.preventDefault();
