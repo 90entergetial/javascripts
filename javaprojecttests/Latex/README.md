@@ -17,3 +17,5 @@ Oct-10/19/2026 - Fractions are displayed properly
 Oct-10/20/2026 - Put the problemtypes in a differet .js file so I don't clutter the main one so much
 
 Oct-10/30/2026 - Fractions now properly delete
+
+Oct-10/31/2026 - the powers work like the fractions now :D

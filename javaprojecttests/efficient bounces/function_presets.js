@@ -1,7 +1,51 @@
 // Before the main .js in the HTML:
 // <script src="function_presets.js"></script>
 
+// Turns a string like "440+sin(x/100)*250" into a function of x (time in ms).
+// Math functions/constants can be used without "Math." (sin, cos, abs, PI, ...), and ^ means power.
+// Returns null if the string isn't a valid formula.
+function parseFrequencyFunction(text) {
+    var badName = false;
+    var code = text.replace(/\^/g, '**').replace(/[A-Za-z_$][A-Za-z0-9_$]*/g, function(name) {
+        if (name === 'x') return name;
+        if (name in Math) return 'Math.' + name;
+        badName = true; // only x and Math names are allowed
+        return name;
+    });
+    if (badName) return null;
+    try {
+        var f = new Function('x', '"use strict"; return (' + code + ');');
+        if (!isFinite(f(0))) return null;
+        return f;
+    } catch (e) {
+        return null;
+    }
+}
+
+// frequency can be:
+//   a number (e.g. 440) for a normal tone,
+//   [min, max] (e.g. [200, 4000]) for noise made of every frequency in that range (drums, hiss, etc.),
+//   a string formula of x (e.g. "440+sin(x/100)*250"), where x is milliseconds since the note started.
+//     If the formula is invalid, no sound plays.
 function playNote(frequency, volume, fade_in_time, sustain_time, fade_out_time) {
+    var totalTime = fade_in_time + sustain_time + fade_out_time; // ms
+
+    // Check the formula first so a bad one plays nothing
+    var freqCurve = null;
+    if (typeof frequency === 'string') {
+        var f = parseFrequencyFunction(frequency);
+        if (!f) return;
+        // Sample the formula once per millisecond (at least 2 points)
+        var points = Math.max(2, Math.ceil(totalTime) + 1);
+        freqCurve = new Float32Array(points);
+        for (var i = 0; i < points; i++) {
+            var value;
+            try { value = Number(f(i * totalTime / (points - 1))); } catch (e) { return; }
+            if (!isFinite(value)) return;
+            freqCurve[i] = value;
+        }
+    }
+
     var gainNode = audioCtx.createGain();
     gainNode.connect(audioCtx.destination);
 
@@ -40,7 +84,13 @@ function playNote(frequency, volume, fade_in_time, sustain_time, fade_out_time) 
     } else {
         source = audioCtx.createOscillator();
         source.type = 'sine';
-        source.frequency.value = frequency; // value in hertz
+        if (freqCurve) {
+            // Frequency follows the formula from x = 0 (start of fade in) to the end of the fade out
+            source.frequency.setValueAtTime(freqCurve[0], now);
+            if (totalTime > 0) source.frequency.setValueCurveAtTime(freqCurve, now, totalTime / 1000);
+        } else {
+            source.frequency.value = frequency; // value in hertz
+        }
         source.connect(gainNode);
     }
 

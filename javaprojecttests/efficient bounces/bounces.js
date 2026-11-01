@@ -24,41 +24,112 @@ window.onload = function () {
     });
     */
     
-    var box = {
+
+    var totalpower = 0n;
+    var totalhits = 0n;
+
+    var amountofboxes = 2;
+    var boxparts = {
         w:600,
         h:900,
-        elastic: 0.0001,
+        elastic: 0.01,
         blocks: [100n, 10n**5n, 10n**10n],
     }
+    //making the stats and blocks divs
+    var stats = document.getElementById("blockstats");
+    while(stats.children.length < amountofboxes){
+        const para = document.createElement("div");
+        para.style.position = "absolute";
 
-    var ball = {
-        gravity:0.6,
-        r:20,
-        x:0,
-        y:300,
-        dx:4,
-        dy:10,
-        bounciness: 0.995,
-        bouncemax: 8,
-        damage: 1n,
-        hits: 0,
-        Bhits: 0n,
-        note: function (n){
-            var sounds = [92,96,99,101,103,104,108,104,103,101,99,96,92,91];
-            return 2**((sounds[n%(sounds.length)]+(Math.floor(n/(14*5))%12)*2)/12);
-        },
-        sequence: function (N){
-            return (N * (N-1n))/2n;
+        const para2 = document.createElement("p");
+        para2.id = "damage";
+        para2.style.position = "absolute";
+        para2.innerHTML = "Power: " + addcommas(totalpower);
+        para.appendChild(para2);
+        const para3 = document.createElement("p");
+        para3.id = "hits";
+        para3.style.position = "absolute";
+        para3.innerHTML = "Hits: " + addcommas(totalhits);
+        para.appendChild(para3);
+
+
+        stats.appendChild(para);
+    }
+    var blocks = document.getElementById("blocks");
+    while(blocks.children.length < amountofboxes){
+        const para = document.createElement("div");
+        para.style.position = "absolute";
+        blocks.appendChild(para);
+    }
+    //actual boxes
+    var box = []
+    for(var i = 0; i < amountofboxes; i++){
+        box.push({
+            w:boxparts.w,
+            h:boxparts.h,
+            xoffset: ((i+0.5)-amountofboxes/2)*boxparts.w*1.5,
+            yoffset: 0,
+            elastic: boxparts.elastic,
+            blocks: boxparts.blocks.slice(),
+            hits: 0n,
+            damage: 0n,
+        });
+    }
+
+    var ball = [];
+
+    // Adds a separate copy of a preset ball (from ball_presets.js) into box number boxid.
+    function addBall(type, boxid, speedmultiplier=1) {
+        var variant = ball_variants.find(v => v.type === type);
+        if(!variant){
+            console.warn("addBall: no ball variant named " + type);
+            return;
+        }
+        // {...} makes a new object, so each ball moves on its own.
+        var newBall = {...variant.ball, in_box: boxid};
+        // Any value written as a function gets called now (like dx and dy),
+        // except real methods the ball keeps using.
+        var methods = ["note", "sequence"];
+        for(var key in newBall){
+            if(typeof newBall[key] === "function" && !methods.includes(key)){
+                newBall[key] = newBall[key]();
+            }
+        }
+        newBall.damage = newBall.sequence(newBall.Bhits);
+        if(speedmultiplier != 1){
+            newBall.dx *= Math.sqrt(speedmultiplier);
+            newBall.dy *= Math.sqrt(speedmultiplier);
+            // gravity is acceleration, so it scales with the square of speed.
+            newBall.gravity *= speedmultiplier;
+            newBall.bouncemax *= Math.sqrt(speedmultiplier);
+        }
+
+        ball.push(newBall);
+        return newBall;
+    }
+
+    addBall("factorial", 0, 1.15);
+    for(var i = 0; i < 2; i++){
+        addBall("fibonacci", 1,1);
+    }
+
+    //before anything, change the damage of every ball to the 0th term of the sequence.
+    for(var i = 0; i < ball.length; i++){
+        ball[i].damage = ball[i].sequence(ball[i].Bhits);
+        box[ball[i].in_box].damage += ball[i].damage;
+        totalpower += ball[i].damage;
+    }
+
+    for(var i = 0; i < box.length; i++){
+        var heights = [];
+        for(var j = 0; j < box[i].blocks.length; j++){
+            heights.push(150*((j)-box[i].blocks.length/2))
         }
     }
 
-    var heights = [];
-    for(var i = 0; i < box.blocks.length; i++){
-        heights.push(150*((i)-box.blocks.length/2))
-    }
-    function blocks() {
-        var blocks = document.getElementById("blocks");
-        while(blocks.children.length < box.blocks.length){
+    function _blocks(boxi) {
+        var blocks = document.getElementById("blocks").children[boxi];
+        while(blocks.children.length < box[boxi].blocks.length){
             const para = document.createElement("p");
             para.style.position = "absolute";
             para.style.color = "rgb(0, 0, 0)";
@@ -66,73 +137,93 @@ window.onload = function () {
             para.style.transform = "translate(-50%, -50%)";
             blocks.appendChild(para);
         }
-        for(var i = 0; i < box.blocks.length; i++){
+        for(var i = 0; i < box[boxi].blocks.length; i++){
             var block = blocks.children[i];
-            if(box.blocks[i] == 0) {
+            if(box[boxi].blocks[i] == 0) {
                 block.innerHTML = " ";
                 continue;
             }
-            block.innerHTML = bigaddcommas(box.blocks[i]);
-            block.style.left = canvas.width/2 + "px";
-            block.style.top  = (canvas.height/2 + heights[i] + 75) + "px";
+            block.innerHTML = bigaddcommas(box[boxi].blocks[i]);
+            block.style.left = (canvas.width/2 + box[boxi].xoffset) + "px";
+            block.style.top  = (canvas.height/2 + heights[i] + 75 + box[boxi].yoffset) + "px";
 
             ctx.fillStyle = "rgb(19, 19, 20)";
-            ctx.fillRect(canvas.width/2-box.w/2,canvas.height/2+heights[i], box.w, 151);
+            ctx.fillRect(canvas.width/2-box[boxi].w/2+box[boxi].xoffset,canvas.height/2+heights[i]+box[boxi].yoffset, box[boxi].w, 151);
             ctx.fillStyle = "rgb(222, 226, 240)";
-            ctx.fillRect(canvas.width/2-box.w/2+10,canvas.height/2+10+heights[i], box.w-20, 130);
+            ctx.fillRect(canvas.width/2-box[boxi].w/2+10+box[boxi].xoffset,canvas.height/2+10+heights[i]+box[boxi].yoffset, box[boxi].w-20, 130);
         }
 
-        var damage = document.getElementById("damage");
+        var damage = document.getElementById("blockstats").children[boxi].children[0];
         damage.style.color = "rgb(0, 0, 0)";
-        damage.style.top = (canvas.height/2-box.h/2-10) + "px";
-        damage.style.left = (canvas.width/2-box.w/2) + "px";
+        damage.style.top = (canvas.height/2-box[boxi].h/2-10+box[boxi].yoffset) + "px";
+        damage.style.left = (canvas.width/2-box[boxi].w/2+box[boxi].xoffset) + "px";
         damage.style.transform = "translate(0%, -100%)";
         damage.style.padding = "0px";
         damage.style.fontSize = "60px";
-        damage.innerHTML = "Power: " + bigaddcommas(ball.damage);
+        damage.style.width = "1000px";
+        //damage.innerHTML = "Power: " + bigaddcommas(ball[0].damage);
+        damage.innerHTML = "Power: " + bigaddcommas(box[boxi].damage);
 
-        var damage = document.getElementById("hits");
+        var damage = document.getElementById("blockstats").children[boxi].children[1];
         damage.style.color = "rgb(0, 0, 0)";
-        damage.style.top = (canvas.height/2+box.h/2-10) + "px";
-        damage.style.left = (canvas.width/2-box.w/2) + "px";
+        damage.style.top = (canvas.height/2+box[boxi].h/2-10+box[boxi].yoffset) + "px";
+        damage.style.left = (canvas.width/2-box[boxi].w/2+box[boxi].xoffset) + "px";
         damage.style.transform = "translate(0%, 50%)";
         damage.style.padding = "0px";
         damage.style.fontSize = "60px";
-        damage.innerHTML = "Hits: " + addcommas(ball.hits);
+        damage.style.width = "1000px";
+        //damage.innerHTML = "Hits: " + addcommas(ball[0].hits);
+        damage.innerHTML = "Hits: " + addcommas(box[boxi].hits);
 
     }
-    function damage(i, B, sound) {
+    function damage(i, B, sound, balli, boxi) {
         B.hits += 1;
         B.Bhits += 1n;
-        box.blocks[i] -= B.damage;
-        B.damage = ball.sequence(B.Bhits);
-        if(box.blocks[i] <= 0) playNote([1000, 8000], 0.2, 0, 10, 200);
-        else if(sound && ball.note(B.hits) <= 1000000) playNote(ball.note(B.hits), 0.2, 0, 0, 100);
-        box.blocks[i] = cst(box.blocks[i], 0, box.blocks[i]);
+        box[boxi].hits += 1n;
+        box[boxi].blocks[i] -= B.damage;
+        totalpower -= B.damage;
+        box[boxi].damage -= B.damage;
+        B.damage = ball[balli].sequence(B.Bhits);
+        totalpower += B.damage;
+        box[boxi].damage += B.damage;
+        totalhits += 1n;
+        if(box[boxi].blocks[i] <= 0) {
+            var note = ball[balli].note(B.hits, "break");
+            playNote(note[0], note[1], note[2], note[3], note[4]);
+        }
+        else if(sound && ball[balli].note(B.hits, "checkmax")) {
+            var note = ball[balli].note(B.hits, "sound");
+            playNote(note[0], note[1], note[2], note[3], note[4]);
+        }
+        box[boxi].blocks[i] = cst(box[boxi].blocks[i], 0, box[boxi].blocks[i]);
     }
 
     // The y the ball's center sits at when touching the floor:
     // the top of the first live block, or the bottom of the box if none are left.
-    function floorY(B) {
-        for(var i = 0; i < box.blocks.length; i++){
-            if(box.blocks[i] != 0) return { y: B.r - heights[i], block: i };
+    function floorY(B, box_) {
+        for(var i = 0; i < box_.blocks.length; i++){
+            if(box_.blocks[i] != 0) return { y: B.r - heights[i], block: i };
         }
-        return { y: -box.h/2 + B.r, block: -1 };
+        return { y: -box_.h/2 + B.r, block: -1 };
     }
 
     function bounceSpeed(v, B) {
         return cst(Math.abs(v*B.bounciness), box.elastic, B.bouncemax);
     }
 
-    const REST_SPEED = 0.00001; // bounces slower than this count as "at rest"
+    const REST_SPEED = 0; // bounces slower than this count as "at rest"
     const MAX_HITS_PER_STEP = 2000000; // safety cap so a step can never loop forever
 
-    function step(B) {
+    function step(B, i) {
+
+        // the box the ball is in
+        var box_ = box[B.in_box];
+
         // x has no acceleration, so mirroring the overshoot is already exact
         B.x += B.dx;
-        if(Math.abs(B.x)+B.r > box.w/2){
+        if(Math.abs(B.x)+B.r > box_.w/2){
             B.dx = -B.dx;
-            var diff = Math.abs((box.w/2)-(Math.abs(B.x)+B.r));
+            var diff = Math.abs((box_.w/2)-(Math.abs(B.x)+B.r));
             B.x += 2 * diff * sign(B.dx);
         }
 
@@ -140,11 +231,11 @@ window.onload = function () {
         // If it hits something partway, stop at the moment of contact, bounce,
         // then use the rest of the frame with the new velocity.
         var g = B.gravity;
-        var ceil = box.h/2 - B.r;
+        var ceil = box_.h/2 - B.r;
         var T = 1; // time left in this frame
 
         for(var n = 0; n < MAX_HITS_PER_STEP && T > 0; n++){
-            var fl = floorY(B);
+            var fl = floorY(B, box_);
             var y0 = B.y, v0 = B.dy;
             var tHit = Infinity, hit = 0; // hit: -1 floor, 1 ceiling
 
@@ -194,8 +285,8 @@ window.onload = function () {
                 B.dy = 0;
                 break;
             }
-            if(fl.block >= 0 && n < 10) damage(fl.block, B, true);
-            else if(fl.block >= 0) damage(fl.block, B, false);
+            if(fl.block >= 0 && n < 10) damage(fl.block, B, true, i, B.in_box);
+            else if(fl.block >= 0) damage(fl.block, B, false, i, B.in_box);
             var vOut = bounceSpeed(vHit, B);
             if(vOut < REST_SPEED){ // too slow to leave the floor
                 B.dy = 0;
@@ -209,22 +300,28 @@ window.onload = function () {
     function update() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        step(ball);
+        for(var i = 0; i < ball.length; i++){
+            step(ball[i], i);
+        }
         //bg
         ctx.fillStyle = "rgb(222, 226, 240)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.fillStyle = "rgb(19, 19, 20)";
-        ctx.fillRect(canvas.width/2-box.w/2-10,canvas.height/2-box.h/2-10, box.w+20, box.h+20);
-        
-        ctx.fillStyle = "rgb(222, 226, 240)";
-        ctx.fillRect(canvas.width/2-box.w/2,canvas.height/2-box.h/2, box.w, box.h);
-        blocks()
+        for(var i = 0; i < box.length; i++){
+            ctx.fillStyle = "rgb(19, 19, 20)";
+            ctx.fillRect(canvas.width/2-box[i].w/2-10+box[i].xoffset,canvas.height/2-box[i].h/2-10+box[i].yoffset, box[i].w+20, box[i].h+20);
+            
+            ctx.fillStyle = "rgb(222, 226, 240)";
+            ctx.fillRect(canvas.width/2-box[i].w/2+box[i].xoffset,canvas.height/2-box[i].h/2+box[i].yoffset, box[i].w, box[i].h);
+            _blocks(i);
+        }
         //ball
-        ctx.fillStyle = "rgb(98, 104, 176)"
+        for(var i = 0; i < ball.length; i++){
+        ctx.fillStyle = ball[i].color;
         ctx.beginPath();
-        ctx.arc(canvas.width/2-ball.x, canvas.height/2-ball.y, ball.r, 0, Math.PI*2);
+        ctx.arc(canvas.width/2-ball[i].x+box[ball[i].in_box].xoffset, canvas.height/2-ball[i].y+box[ball[i].in_box].yoffset, ball[i].r, 0, Math.PI*2);
         ctx.fill();
+        }
 
         //mouse
         // ctx.fillStyle = "rgb(200, 10, 10)"

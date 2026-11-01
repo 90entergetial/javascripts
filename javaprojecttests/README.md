@@ -37,3 +37,5 @@ Oct-10/6/2026 - Continuing making the README files.
 Oct-10/20/2026 - For the projects that dont use the canvas (like 'Latex') I made a seperate preset because that can actually be used.
 
 Oct-10/29/2026 - Added efficient bounces. PlayNote is now significantly more aura.
+
+Oct-11/01/2026 - If you thought PlayNote couldn't have even more aura, it now can play frequency by a function of time.
