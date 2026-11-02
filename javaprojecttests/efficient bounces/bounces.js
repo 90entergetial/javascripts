@@ -29,13 +29,19 @@ window.onload = function () {
     var totalhits = 0n;
 
     var amountofboxes = 2;
+
+    //optional box titles set by me
+    var boxtitles = ["Factorial", "Triangle x2"];
+    var textsize = 50;
+
     var boxparts = {
-        w:600,
+        w:500,
         h:900,
         elastic: 0.01,
         blocks: [100n, 10n**5n, 10n**10n],
+        box_seperation: 1.5,
     }
-    //making the stats and blocks divs
+    //making the stats and blocks divs and blocktitles
     var stats = document.getElementById("blockstats");
     while(stats.children.length < amountofboxes){
         const para = document.createElement("div");
@@ -61,13 +67,27 @@ window.onload = function () {
         para.style.position = "absolute";
         blocks.appendChild(para);
     }
+    var blocktitles = document.getElementById("blocktitles");
+    while(blocktitles.children.length < amountofboxes){
+        // position is set every frame in _blocks(), once the canvas has its real size
+        var btitle = document.createElement("p");
+        btitle.style.position = "absolute";
+        btitle.style.color = "rgba(0, 0, 0, 0.1)";
+        btitle.style.boxSizing = "border-box";
+        btitle.style.width = boxparts.w + "px";
+        btitle.style.padding = "5px";
+        btitle.style.fontSize = textsize + "px";
+        //btitle.innerHTML = "Power: " + bigaddcommas(ball[0].damage);
+        btitle.innerHTML = boxtitles[blocktitles.children.length];
+        blocktitles.appendChild(btitle);
+    }
     //actual boxes
     var box = []
     for(var i = 0; i < amountofboxes; i++){
         box.push({
             w:boxparts.w,
             h:boxparts.h,
-            xoffset: ((i+0.5)-amountofboxes/2)*boxparts.w*1.5,
+            xoffset: ((i+0.5)-amountofboxes/2)*boxparts.w*boxparts.box_seperation,
             yoffset: 0,
             elastic: boxparts.elastic,
             blocks: boxparts.blocks.slice(),
@@ -108,9 +128,9 @@ window.onload = function () {
         return newBall;
     }
 
-    addBall("factorial", 0, 1.15);
+    addBall("factorial", 0, 1.17);
     for(var i = 0; i < 2; i++){
-        addBall("fibonacci", 1,1);
+        addBall("triangle", 1,1);
     }
 
     //before anything, change the damage of every ball to the 0th term of the sequence.
@@ -133,7 +153,7 @@ window.onload = function () {
             const para = document.createElement("p");
             para.style.position = "absolute";
             para.style.color = "rgb(0, 0, 0)";
-            para.style.fontSize = "50px";
+            para.style.fontSize = textsize + "px";
             para.style.transform = "translate(-50%, -50%)";
             blocks.appendChild(para);
         }
@@ -153,14 +173,19 @@ window.onload = function () {
             ctx.fillRect(canvas.width/2-box[boxi].w/2+10+box[boxi].xoffset,canvas.height/2+10+heights[i]+box[boxi].yoffset, box[boxi].w-20, 130);
         }
 
+        // box title: top-left of the inside of the box (the 5px padding is set on the element)
+        var btitle = document.getElementById("blocktitles").children[boxi];
+        btitle.style.left = (canvas.width/2 - box[boxi].w/2 + box[boxi].xoffset) + "px";
+        btitle.style.top  = (canvas.height/2 - box[boxi].h/2 + box[boxi].yoffset) + "px";
+
         var damage = document.getElementById("blockstats").children[boxi].children[0];
         damage.style.color = "rgb(0, 0, 0)";
         damage.style.top = (canvas.height/2-box[boxi].h/2-10+box[boxi].yoffset) + "px";
         damage.style.left = (canvas.width/2-box[boxi].w/2+box[boxi].xoffset) + "px";
         damage.style.transform = "translate(0%, -100%)";
         damage.style.padding = "0px";
-        damage.style.fontSize = "60px";
-        damage.style.width = "1000px";
+        damage.style.fontSize = textsize + "px";
+        damage.style.width = boxparts.w+ "px";
         //damage.innerHTML = "Power: " + bigaddcommas(ball[0].damage);
         damage.innerHTML = "Power: " + bigaddcommas(box[boxi].damage);
 
@@ -170,8 +195,8 @@ window.onload = function () {
         damage.style.left = (canvas.width/2-box[boxi].w/2+box[boxi].xoffset) + "px";
         damage.style.transform = "translate(0%, 50%)";
         damage.style.padding = "0px";
-        damage.style.fontSize = "60px";
-        damage.style.width = "1000px";
+        damage.style.fontSize = textsize + "px";
+        damage.style.width = boxparts.w + "px";
         //damage.innerHTML = "Hits: " + addcommas(ball[0].hits);
         damage.innerHTML = "Hits: " + addcommas(box[boxi].hits);
 
@@ -297,11 +322,16 @@ window.onload = function () {
 
     }
 
+    var play = false;
+    // start after two seconds
+    setTimeout(() => { play = true; }, 2000);
     function update() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        for(var i = 0; i < ball.length; i++){
-            step(ball[i], i);
+        if(play) {
+            for(var i = 0; i < ball.length; i++){
+                step(ball[i], i);
+            }
         }
         //bg
         ctx.fillStyle = "rgb(222, 226, 240)";

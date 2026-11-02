@@ -1,6 +1,6 @@
 //For me, preset balls.
 var ball_variants = [
-    {type: "fibonacci",
+    {type: "triangle",
         ball: {
             in_box: 0, // replaced by addBall()
             gravity:0.6,
