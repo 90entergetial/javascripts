@@ -23,7 +23,6 @@ window.onload = function () {
         mouseY = event.clientY;
     });
     */
-    
 
     var totalpower = 0n;
     var totalhits = 0n;
@@ -31,14 +30,14 @@ window.onload = function () {
     var amountofboxes = 2;
 
     //optional box titles set by me
-    var boxtitles = ["Powers of Two", "Triangle x10"];
+    var boxtitles = ["3rd Tetration", "Triangle + Powers of Two + Factorial"];
     var textsize = 48;
 
     var boxparts = {
         w:500,
         h:900,
         elastic: 0.01,
-        blocks: [100n, 10n**5n, 10n**8n],
+        blocks: [100n, 10n**5n, 10n**200n],
         box_seperation: 1.5,
     }
     //making the stats and blocks divs and blocktitles
@@ -134,7 +133,7 @@ window.onload = function () {
                 newBall[key] = newBall[key]();
             }
         }
-        newBall.damage = newBall.sequence(newBall.Bhits);
+        newBall.damage = newBall.sequence(0n);
         if(speedmultiplier != 1){
             newBall.dx *= (speedmultiplier);
             newBall.dy *= (speedmultiplier);
@@ -147,14 +146,14 @@ window.onload = function () {
         return newBall;
     }
 
-    addBall("powers of two", 0, 1/(4.23));
-    for(var i = 0; i < 10; i++){
-        addBall("triangle", 1,1);
-    }
+    addBall("powers of two", 1, 1/(5));
+    addBall("factorial", 1, 1/(5));
+    addBall("triangle", 1,1);
+    addBall("Pell", 0,1/12);
 
     //before anything, change the damage of every ball to the 0th term of the sequence.
     for(var i = 0; i < ball.length; i++){
-        ball[i].damage = ball[i].sequence(ball[i].Bhits);
+        ball[i].damage = ball[i].sequence(0n);
         box[ball[i].in_box].damage += ball[i].damage;
         totalpower += ball[i].damage;
     }
@@ -224,7 +223,7 @@ window.onload = function () {
         damage.style.transform = "translate(0%, -100%)";
         damage.style.padding = "0px";
         damage.style.fontSize = textsize + "px";
-        damage.style.width = (boxparts.w*1.2) + "px";
+        damage.style.width = (boxparts.w*1.5) + "px";
         //damage.innerHTML = "Power: " + bigaddcommas(ball[0].damage);
         damage.innerHTML = "Power: " + bigaddcommas(box[boxi].damage);
 
@@ -235,19 +234,18 @@ window.onload = function () {
         damage.style.transform = "translate(0%, 50%)";
         damage.style.padding = "0px";
         damage.style.fontSize = textsize + "px";
-        damage.style.width = (boxparts.w*1.2) + "px";
+        damage.style.width = (boxparts.w*1.5) + "px";
         //damage.innerHTML = "Hits: " + addcommas(ball[0].hits);
         damage.innerHTML = "Hits: " + addcommas(box[boxi].hits);
 
     }
     function damage(i, B, sound, balli, boxi) {
         B.hits += 1;
-        B.Bhits += 1n;
         box[boxi].hits += 1n;
         box[boxi].blocks[i] -= B.damage;
         totalpower -= B.damage;
         box[boxi].damage -= B.damage;
-        B.damage = ball[balli].sequence(B.Bhits);
+        B.damage = ball[balli].sequence(box[boxi].hits);
         totalpower += B.damage;
         box[boxi].damage += B.damage;
         totalhits += 1n;

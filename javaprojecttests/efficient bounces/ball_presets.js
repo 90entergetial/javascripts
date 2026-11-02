@@ -15,7 +15,6 @@ var ball_variants = [
             bouncemax: 8,
             damage: 1n,
             hits: 0,
-            Bhits: 0n,
             note: function (n, type){
                 var sounds = [92,96,99,101,103,104,108,104,103,101,99,96,92,91];
                 
@@ -57,7 +56,6 @@ var ball_variants = [
         bouncemax: 20,
         damage: 1n,
         hits: 0,
-        Bhits: 0n,
         note: function (n, type){
             
             // The frequency of the note with and without time-dependency.
@@ -76,7 +74,7 @@ var ball_variants = [
 
             //plays if it breaks a block.
             if(type == "break"){
-                return [[500, 2000], 0.05, 0, 10, 2000];
+                return [[500, 2000], 0.03, 0, 10, 2000];
             }
         },
         sequence: function (N){
@@ -99,7 +97,6 @@ var ball_variants = [
         bouncemax: 15,
         damage: 1n,
         hits: 0,
-        Bhits: 0n,
         note: function (n, type){
             
             // The frequency of the note with and without time-dependency.
@@ -123,6 +120,46 @@ var ball_variants = [
         },
         sequence: function (N){
             return 2n**N;
+        }
+        },
+    },
+    {type: "Pell",
+        ball: {
+        in_box: 0,
+        gravity:0.6,
+        r:30,
+        x:0,
+        y:300,
+        color: "hsl(261, 64%, 43%)",
+        dx:() => Math.random()*0.1 + 1,
+        dy:() => Math.random()*0.1,
+        bounciness: 0.9,
+        bouncemax: 15,
+        damage: 1n,
+        hits: 0,
+        note: function (n, type){
+            
+            // The frequency of the note with and without time-dependency.
+            this.freq_no_x = (2**((80+n)/12));
+            this.freq = "55*((-1)^x)+" + (2**((80+n)/12));
+
+            // return [frequency, volume, start time, sustain time, end time]
+            if(type === "sound"){
+                return [this.freq, 0.3, 0, 0, 1000];
+            }
+            if(type == "checkmax"){
+                if(this.freq_no_x > 80000) return false;
+                if(this.freq_no_x < 20) return false;
+                return true;
+            }
+
+            //plays if it breaks a block.
+            if(type == "break"){
+                    return ["220+55*((-1)^x)", 0.3, 0, 10, 2000];
+            }
+        },
+        sequence: function (N){
+            return N**N**N;
         }
         },
     }
