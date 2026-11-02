@@ -31,14 +31,14 @@ window.onload = function () {
     var amountofboxes = 2;
 
     //optional box titles set by me
-    var boxtitles = ["Factorial", "Triangle x2"];
-    var textsize = 50;
+    var boxtitles = ["Powers of Two", "Triangle x10"];
+    var textsize = 48;
 
     var boxparts = {
         w:500,
         h:900,
         elastic: 0.01,
-        blocks: [100n, 10n**5n, 10n**10n],
+        blocks: [100n, 10n**5n, 10n**8n],
         box_seperation: 1.5,
     }
     //making the stats and blocks divs and blocktitles
@@ -81,6 +81,19 @@ window.onload = function () {
         btitle.innerHTML = boxtitles[blocktitles.children.length];
         blocktitles.appendChild(btitle);
     }
+    var blockswins = document.getElementById("blockwins");
+    while(blockswins.children.length < amountofboxes){
+        // position is set every frame in _blocks(), once the canvas has its real size
+        var btitle = document.createElement("p");
+        btitle.style.position = "absolute";
+        btitle.style.color = "rgba(0, 0, 0, 0.1)";
+        btitle.style.boxSizing = "border-box";
+        btitle.style.width = boxparts.w + "px";
+        btitle.style.padding = "5px";
+        btitle.style.fontSize = textsize + "px";
+        //btitle.innerHTML = "Power: " + bigaddcommas(ball[0].damage);
+        blockswins.appendChild(btitle);
+    }
     //actual boxes
     var box = []
     for(var i = 0; i < amountofboxes; i++){
@@ -93,6 +106,12 @@ window.onload = function () {
             blocks: boxparts.blocks.slice(),
             hits: 0n,
             damage: 0n,
+            time: 0,
+            done: false,
+            color: "rgb(19, 19, 20)",
+            mutedcolor: "rgba(19, 19, 20, 0.3)",
+            hitcolor: "rgba(255, 255, 255, 0.2)",
+            hit_animation: 0,
         });
     }
 
@@ -117,19 +136,19 @@ window.onload = function () {
         }
         newBall.damage = newBall.sequence(newBall.Bhits);
         if(speedmultiplier != 1){
-            newBall.dx *= Math.sqrt(speedmultiplier);
-            newBall.dy *= Math.sqrt(speedmultiplier);
+            newBall.dx *= (speedmultiplier);
+            newBall.dy *= (speedmultiplier);
             // gravity is acceleration, so it scales with the square of speed.
-            newBall.gravity *= speedmultiplier;
-            newBall.bouncemax *= Math.sqrt(speedmultiplier);
+            newBall.gravity *= speedmultiplier**2;
+            newBall.bouncemax *= (speedmultiplier);
         }
 
         ball.push(newBall);
         return newBall;
     }
 
-    addBall("factorial", 0, 1.17);
-    for(var i = 0; i < 2; i++){
+    addBall("powers of two", 0, 1/(4.23));
+    for(var i = 0; i < 10; i++){
         addBall("triangle", 1,1);
     }
 
@@ -152,7 +171,7 @@ window.onload = function () {
         while(blocks.children.length < box[boxi].blocks.length){
             const para = document.createElement("p");
             para.style.position = "absolute";
-            para.style.color = "rgb(0, 0, 0)";
+            para.style.color = box[boxi].color;
             para.style.fontSize = textsize + "px";
             para.style.transform = "translate(-50%, -50%)";
             blocks.appendChild(para);
@@ -163,40 +182,60 @@ window.onload = function () {
                 block.innerHTML = " ";
                 continue;
             }
+            block.style.color = box[boxi].color;
+            if(box[boxi].blocks[i-1] == 0 || i == 0) block.style.color = box[boxi].hitcolor;
             block.innerHTML = bigaddcommas(box[boxi].blocks[i]);
             block.style.left = (canvas.width/2 + box[boxi].xoffset) + "px";
             block.style.top  = (canvas.height/2 + heights[i] + 75 + box[boxi].yoffset) + "px";
+            if(box[boxi].blocks[i-1] == 0 || i == 0) block.style.top  = (canvas.height/2 + heights[i] + 75 + box[boxi].yoffset + (-5+10/(-box[boxi].hit_animation/30+2))) + "px";
 
-            ctx.fillStyle = "rgb(19, 19, 20)";
+            ctx.fillStyle = box[boxi].color;
             ctx.fillRect(canvas.width/2-box[boxi].w/2+box[boxi].xoffset,canvas.height/2+heights[i]+box[boxi].yoffset, box[boxi].w, 151);
-            ctx.fillStyle = "rgb(222, 226, 240)";
+            ctx.fillStyle = box[boxi].color;
             ctx.fillRect(canvas.width/2-box[boxi].w/2+10+box[boxi].xoffset,canvas.height/2+10+heights[i]+box[boxi].yoffset, box[boxi].w-20, 130);
+            
+            if(box[boxi].blocks[i-1] == 0 || i == 0){
+            ctx.fillStyle = box[boxi].hitcolor;
+            ctx.fillRect(canvas.width/2-box[boxi].w/2+box[boxi].xoffset,canvas.height/2+heights[i]+box[boxi].yoffset, box[boxi].w, 151);
+            }
+            
+            ctx.fillStyle = "rgba(222, 226, 240, 0.98)";
+            ctx.fillRect(canvas.width/2-box[boxi].w/2+10+box[boxi].xoffset,canvas.height/2+10+heights[i]+box[boxi].yoffset, box[boxi].w-20, 130);
+
         }
 
         // box title: top-left of the inside of the box (the 5px padding is set on the element)
         var btitle = document.getElementById("blocktitles").children[boxi];
+        btitle.style.color = box[boxi].mutedcolor;
         btitle.style.left = (canvas.width/2 - box[boxi].w/2 + box[boxi].xoffset) + "px";
         btitle.style.top  = (canvas.height/2 - box[boxi].h/2 + box[boxi].yoffset) + "px";
+        // box win: bottom-left of the inside of the box (the 5px padding is set on the element)
+        var btitle = document.getElementById("blockwins").children[boxi];
+        btitle.style.left = (canvas.width/2 - box[boxi].w/2 + box[boxi].xoffset) + "px";
+        btitle.style.top  = (canvas.height/2 + box[boxi].h/2 + box[boxi].yoffset) + "px";
+        btitle.style.transform = "translate(0, -100%)";
+        btitle.style.color = box[boxi].mutedcolor;
+        btitle.innerHTML = "Time Spent: ---- " + timeelapsed(Math.round((box[boxi].time*1000)/60));
 
         var damage = document.getElementById("blockstats").children[boxi].children[0];
-        damage.style.color = "rgb(0, 0, 0)";
+        damage.style.color = box[boxi].color;
         damage.style.top = (canvas.height/2-box[boxi].h/2-10+box[boxi].yoffset) + "px";
         damage.style.left = (canvas.width/2-box[boxi].w/2+box[boxi].xoffset) + "px";
         damage.style.transform = "translate(0%, -100%)";
         damage.style.padding = "0px";
         damage.style.fontSize = textsize + "px";
-        damage.style.width = boxparts.w+ "px";
+        damage.style.width = (boxparts.w*1.2) + "px";
         //damage.innerHTML = "Power: " + bigaddcommas(ball[0].damage);
         damage.innerHTML = "Power: " + bigaddcommas(box[boxi].damage);
 
         var damage = document.getElementById("blockstats").children[boxi].children[1];
-        damage.style.color = "rgb(0, 0, 0)";
+        damage.style.color = box[boxi].color;
         damage.style.top = (canvas.height/2+box[boxi].h/2-10+box[boxi].yoffset) + "px";
         damage.style.left = (canvas.width/2-box[boxi].w/2+box[boxi].xoffset) + "px";
         damage.style.transform = "translate(0%, 50%)";
         damage.style.padding = "0px";
         damage.style.fontSize = textsize + "px";
-        damage.style.width = boxparts.w + "px";
+        damage.style.width = (boxparts.w*1.2) + "px";
         //damage.innerHTML = "Hits: " + addcommas(ball[0].hits);
         damage.innerHTML = "Hits: " + addcommas(box[boxi].hits);
 
@@ -212,6 +251,7 @@ window.onload = function () {
         totalpower += B.damage;
         box[boxi].damage += B.damage;
         totalhits += 1n;
+        box[boxi].hit_animation = 30;
         if(box[boxi].blocks[i] <= 0) {
             var note = ball[balli].note(B.hits, "break");
             playNote(note[0], note[1], note[2], note[3], note[4]);
@@ -302,8 +342,12 @@ window.onload = function () {
             }
 
             B.y = fl.y;
-            if(fl.block < 0){ // all blocks gone: fixed hop of speed = gravity (lasts 2 frames)
+            // If the ball is on the floor, stop the timer.
+            if(fl.block < 0){
                 B.dy = a*10;
+                //To get the exact time, remove by the amount of time remaining in the frame:
+                if(!box[ball[i].in_box].done) box[ball[i].in_box].time += 1-T;
+                box[ball[i].in_box].done = true;
                 continue;
             }
             if(Math.abs(vHit) < REST_SPEED){ // already resting on the floor
@@ -322,14 +366,19 @@ window.onload = function () {
 
     }
 
-    var play = false;
-    // start after two seconds
-    setTimeout(() => { play = true; }, 2000);
+    var run = true;
+    var play = -3;
+    // start after some time
+    setInterval(() => {
+        if(run) play+=1;
+        else play = -3;
+    }, 250);
+
     function update() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        if(play) {
-            for(var i = 0; i < ball.length; i++){
+        if(play >= 0) {
+            for(var i = 0; i < Math.min(play, ball.length); i++){
                 step(ball[i], i);
             }
         }
@@ -338,12 +387,46 @@ window.onload = function () {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         for(var i = 0; i < box.length; i++){
+
+            //get the average color of all the balls inside the box
+            var r = 0, g = 0, b = 0, count = 0;
+            for(var j = 0; j < ball.length; j++){
+                if(ball[j].in_box == i){
+                    count+=1;
+                    var rgb = toRGB(ball[j].color);
+                    r += rgb[0];
+                    g += rgb[1];
+                    b += rgb[2];
+                }
+            }
+            if(count == 0) {
+                box[i].color = "rgb(19, 19, 20)"; // empty box: avoid dividing by 0
+                box[i].mutedcolor = "rgba(19, 19, 20, 0.3)";
+                box[i].hitcolor = "rgb(255, 255, 255)";
+            } else {
+                box[i].color = "rgb(" + (r/count) + ", " + (g/count) + ", " + (b/count) + ")";
+                box[i].mutedcolor = "rgba(" + (r/count) + ", " + (g/count) + ", " + (b/count) + ", 0.3)";
+                box[i].hitcolor = "rgb(" + ((r*(1+box[i].hit_animation/200))/count) + ", " + ((g*(1+box[i].hit_animation/200))/count) + ", " + ((b*(1+box[i].hit_animation/200))/count) + ")";
+            }
+
+            if(box[i].hit_animation > 0) box[i].hit_animation -= 1;
+            if(box[i].hit_animation <= 0) box[i].hit_animation = 0;
+
             ctx.fillStyle = "rgb(19, 19, 20)";
+            ctx.fillRect(canvas.width/2-box[i].w/2-15+box[i].xoffset,canvas.height/2-box[i].h/2-15+box[i].yoffset, box[i].w+30, box[i].h+30);
+            
+            ctx.fillStyle = box[i].color;
+            ctx.fillRect(canvas.width/2-box[i].w/2-10+box[i].xoffset,canvas.height/2-box[i].h/2-10+box[i].yoffset, box[i].w+20, box[i].h+20);
+
+            ctx.fillStyle = box[i].hitcolor;
             ctx.fillRect(canvas.width/2-box[i].w/2-10+box[i].xoffset,canvas.height/2-box[i].h/2-10+box[i].yoffset, box[i].w+20, box[i].h+20);
             
-            ctx.fillStyle = "rgb(222, 226, 240)";
+            ctx.fillStyle = box[i].color;
+            ctx.fillRect(canvas.width/2-box[i].w/2+box[i].xoffset,canvas.height/2-box[i].h/2+box[i].yoffset, box[i].w, box[i].h);
+            ctx.fillStyle = "rgba(222, 226, 240, 0.98)";
             ctx.fillRect(canvas.width/2-box[i].w/2+box[i].xoffset,canvas.height/2-box[i].h/2+box[i].yoffset, box[i].w, box[i].h);
             _blocks(i);
+            if(!box[i].done && run && play >= 0) box[i].time += 1; // in frames
         }
         //ball
         for(var i = 0; i < ball.length; i++){
@@ -361,6 +444,25 @@ window.onload = function () {
 
         requestAnimationFrame(update);
         clicked = false;
+    }
+
+    // Turns any CSS color ("rgb(...)", "hsl(...)", "#abc", "red", ...) into [r, g, b].
+    // The browser does the conversion: give a canvas a color, and reading it back
+    // gives "#rrggbb" (or "rgba(r, g, b, a)" if the color is see-through).
+    var colorCtx = document.createElement("canvas").getContext("2d");
+    function toRGB(color){
+        colorCtx.fillStyle = "#000";
+        colorCtx.fillStyle = color;
+        var c = colorCtx.fillStyle;
+        if(c[0] == "#"){
+            return [
+                parseInt(c.slice(1, 3), 16),
+                parseInt(c.slice(3, 5), 16),
+                parseInt(c.slice(5, 7), 16),
+            ];
+        }
+        var nums = c.match(/[\d.]+/g);
+        return [parseFloat(nums[0]), parseFloat(nums[1]), parseFloat(nums[2])];
     }
 
     // start boi

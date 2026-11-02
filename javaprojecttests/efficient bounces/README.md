@@ -11,3 +11,4 @@ Oct-10/29/2026 - did sub-frame block breaking and ball movement so it can bounce
 Oct-11/01/2026 - These. Balls. Must. Be. As. Dynamic. As. Possible. Notes are now dependent entirely inside the ball.
 - Added factorial ball, MULTIPLE BOXES NOW WE ARE TALKING POWERTORIAL YEAHHHHHH
 - font sizes are changeable... well only inside the code but just wait
+- IMPACT HITS. also powers of two ball
