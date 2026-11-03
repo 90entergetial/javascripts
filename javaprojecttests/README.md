@@ -17,11 +17,11 @@ fishing game - Extremely unfinished concept of a really cool game idea. You have
 
 is this in the bible - A version of https://bible.lorte.software/ which ACTUALLY has all the words, including "a" and "i". I had to make this beacuse not having the extremely common words that are definetly in the bible bugged me for more than a day.
 
-not so randomwalk - First .html that i've made ever.
+not so randomwalk - Second .html that i've made ever.
 
 pendulum control - Tried to make a double-pendulum-connected-to-a-car, currently only the first pendulum actualy effects the car, the second one has no affecting mass.
 
-randomwalk - Second .html that i've made ever.
+randomwalk - First .html that i've made ever.
 
 room generation - Actually a really cool concept. My attempt of generating rooms, but the rooms can scale by 16 up or down, giving a fractal-like two dimensions, like a 2d version of Fractal Block World.
 
@@ -38,7 +38,9 @@ Oct-10/20/2026 - For the projects that dont use the canvas (like 'Latex') I made
 
 Oct-10/29/2026 - Added efficient bounces. PlayNote is now significantly more aura.
 
-Oct-11/01/2026 - If you thought PlayNote couldn't have even more aura, it now can play frequency by a function of time.
+Nov-11/01/2026 - If you thought PlayNote couldn't have even more aura, it now can play frequency by a function of time.
+
+Nov-11/02/2026 - Dang it. I switched the "first" and "second" in "not so randomwalk" and "randomwalk".
 
 *Note:*
 
