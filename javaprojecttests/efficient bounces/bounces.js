@@ -27,18 +27,18 @@ window.onload = function () {
     var totalpower = 0n;
     var totalhits = 0n;
 
-    var amountofboxes = 2;
+    var amountofboxes = 3;
 
     //optional box titles set by me
-    var boxtitles = ["3rd Tetration", "Triangle + Powers of Two + Factorial"];
+    var boxtitles = ["Fibonacci", "Triangle", "Powers of Two"];
     var textsize = 48;
 
     var boxparts = {
         w:500,
         h:900,
         elastic: 0.01,
-        blocks: [100n, 10n**5n, 10n**200n],
-        box_seperation: 1.5,
+        blocks: [100n, 10n**5n, 10n**13n],
+        box_seperation: 1.3,
     }
     //making the stats and blocks divs and blocktitles
     var stats = document.getElementById("blockstats");
@@ -146,10 +146,9 @@ window.onload = function () {
         return newBall;
     }
 
-    addBall("powers of two", 1, 1/(5));
-    addBall("factorial", 1, 1/(5));
-    addBall("triangle", 1,1);
-    addBall("Pell", 0,1/12);
+    addBall("fibonacci", 0,1/3);
+    addBall("triangle", 1,4.195215326500528/3);
+    addBall("powers of two", 2,1.2516743213463186/3);
 
     //before anything, change the damage of every ball to the 0th term of the sequence.
     for(var i = 0; i < ball.length; i++){
@@ -344,7 +343,16 @@ window.onload = function () {
             if(fl.block < 0){
                 B.dy = a*10;
                 //To get the exact time, remove by the amount of time remaining in the frame:
-                if(!box[ball[i].in_box].done) box[ball[i].in_box].time += 1-T;
+                if(!box[ball[i].in_box].done) {
+                    box[ball[i].in_box].time += 1-T;
+                    if(firstwin[0] == -1) {
+                        firstwin[0] = box[ball[i].in_box].time;
+                        console.log("first win: " + box[ball[i].in_box].time + "ms, box #" + ball[i].in_box);
+                    } else {
+                        console.log("Won at " + box[ball[i].in_box].time + "ms; ");
+                        console.log((box[ball[i].in_box].time)/(firstwin[0]) + "x longer than fastest, box #" + ball[i].in_box);
+                    }
+                }
                 box[ball[i].in_box].done = true;
                 continue;
             }
@@ -363,7 +371,7 @@ window.onload = function () {
         }
 
     }
-
+    var firstwin = [-1];
     var run = true;
     var play = -3;
     // start after some time
@@ -376,8 +384,19 @@ window.onload = function () {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         if(play >= 0) {
-            for(var i = 0; i < Math.min(play, ball.length); i++){
-                step(ball[i], i);
+            //play the ones by the amount in each box, not all of them so one doesn't start before the other
+            var insections = [];
+            for(var i = 0; i < amountofboxes; i++){
+                insections.push([]);
+            }
+            for(var i = 0; i < ball.length; i++){
+                insections[ball[i].in_box].push(i);
+            }
+
+            for(var j = 0; j < insections.length; j++){
+                for(var i = 0; i < Math.min(play, insections[j].length); i++){
+                    step(ball[insections[j][i]], insections[j][i]);
+                }
             }
         }
         //bg

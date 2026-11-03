@@ -123,7 +123,54 @@ var ball_variants = [
         }
         },
     },
-    {type: "Pell",
+    {type: "fibonacci",
+        ball: {
+        in_box: 0,
+        gravity:0.6,
+        r:20,
+        x:0,
+        y:300,
+        color: "hsl(74, 59%, 36%)",
+        dx:() => Math.random()*0.1 + 3,
+        dy:() => Math.random()*0.1,
+        bounciness: 0.99,
+        bouncemax: 8,
+        damage: 1n,
+        hits: 0,
+        note: function (n, type){
+            var sounds = [70,72,76,80,82,80,76,72];
+            
+            // The frequency of the note with and without time-dependency.
+            this.freq = "sin(x/10)*(x/10)+" + (2**((sounds[n%(sounds.length)]+24+(Math.floor(n/(14*5))%12)*2)/12));
+            this.freq_no_x = 2**((sounds[n%(sounds.length)]+24+(Math.floor(n/(14*5))%12)*2)/12);
+
+            // return [frequency, volume, start time, sustain time, end time]
+            if(type === "sound"){
+                return [this.freq, 0.05, 0, 0, 100];
+            }
+            if(type == "checkmax"){
+                if(this.freq_no_x > 80000) return false;
+                if(this.freq_no_x < 20) return false;
+                return true;
+            }
+
+            //plays if it breaks a block.
+            if(type == "break"){
+                return [[1000, 8000], 0.05, 0, 10, 200];
+            }
+        },
+        sequence: function (N){
+            this.a = [0n,1n,0n];
+            for(var i = 0n; i < N; i+=1n){
+                this.a[2] = this.a[1] + this.a[0];
+                this.a[0] = this.a[1];
+                this.a[1] = this.a[2];
+            }
+            return this.a[2];
+        }
+        },
+    },
+    {type: "3rd Tetration",
         ball: {
         in_box: 0,
         gravity:0.6,
