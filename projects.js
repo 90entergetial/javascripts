@@ -27,6 +27,7 @@ window.PROJECTS = [
     entry: "isthisinthebible.html",
     date: "2026-10-04",
     tags: ["tool"],
+    image: "isthisinthebible.png",
     description:
       "A version of bible.lorte.software which ACTUALLY has all the words. It was missing one-letter words: \"a\" and \"i\".",
   },
@@ -36,6 +37,7 @@ window.PROJECTS = [
     entry: "BonkMapEditor.html",
     date: "2026-09-06",
     tags: ["tool", "bonk.io"],
+    image: "bonkmapeditor.png",
     description:
       "Originally created by LEGENDBOSS123. I added player markers, a distance measurer, map info, shadows, proper spawn colors, higher-quality .png and .svg downloads, an adjustable grid.",
   },
@@ -45,6 +47,7 @@ window.PROJECTS = [
     entry: "acoupleofcircles.html",
     date: "2026-08-25",
     tags: ["simulation", "art"],
+    image: "acoupleofcircles.png",//this image has more data than move of the videos here ;-;
     description:
       "Remade this from my Khan Academy ProcessingJS program. Thousands of little circles paint a white canvas. Looks really nice when you wait long enough.",
   },
@@ -63,6 +66,7 @@ window.PROJECTS = [
     entry: "findtheconnect4.html",
     date: "2026-07-02",
     tags: ["game"],
+    image: "findtheconnect4.png",
     description:
       "A huge connect-4 game with a win hidden somewhere inside it. A nice little game to play with others.",
   },
