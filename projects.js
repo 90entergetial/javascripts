@@ -1,6 +1,3 @@
-// List of projects shown on the showcase page (index.html).
-// To add a project: add an entry here. `entry` is the HTML file inside the folder;
-// leave it out for projects that can't run in the browser on their own.
 window.PROJECTS = [
   {
     title: "Efficient Bounces",
@@ -8,17 +5,21 @@ window.PROJECTS = [
     entry: "bounces.html",
     date: "2026-10-28",
     tags: ["simulation", "math"],
+    image: "Efficient Bounces.png",
+    video: "Efficient Bounces.mp4",
     description:
-      "Influenced by Powertorial. Seeing how far I can mathematically push the computing power of this little game: sub-frame bouncing, BigInt damage, factorial and tetration balls.",
+      "Influenced by Powertorial. Seeing how far I can mathematically push the computing power of this little game.",
   },
   {
-    title: "Latex",
+    title: "LaTeX",
     folder: "Latex",
     entry: "latex.html",
     date: "2026-10-14",
     tags: ["math", "tool"],
+    image: "LaTeX.png",
+    video: "LaTeX.mp4",
     description:
-      "Math problems rendered with LaTeX in the browser, with stages, an input box with a real cursor, fractions, powers, and a little upgrade store.",
+      "A test of LaTeX rendering, making a little math game out of it. Also a test of shortcut conveniences for the user.",
   },
   {
     title: "Is this in the Bible?",
@@ -27,7 +28,7 @@ window.PROJECTS = [
     date: "2026-10-04",
     tags: ["tool"],
     description:
-      "A version of bible.lorte.software which ACTUALLY has all the words, including \"a\" and \"i\".",
+      "A version of bible.lorte.software which ACTUALLY has all the words. It was missing one-letter words: \"a\" and \"i\".",
   },
   {
     title: "Bonk.io Map Editor",
@@ -36,33 +37,25 @@ window.PROJECTS = [
     date: "2026-09-06",
     tags: ["tool", "bonk.io"],
     description:
-      "Originally created by LEGENDBOSS123. I added player markers, a distance measurer, map info, shadows, proper spawn colors, higher-quality .png and .svg downloads, and an adjustable grid.",
+      "Originally created by LEGENDBOSS123. I added player markers, a distance measurer, map info, shadows, proper spawn colors, higher-quality .png and .svg downloads, an adjustable grid.",
   },
   {
-    title: "Tampertamper",
-    folder: "Bonkio",
-    date: "2026-09-23",
-    tags: ["userscript", "bonk.io"],
-    description:
-      "A little Tampermonkey test project for bonk.io. Needs LEGENDBOSS123's mod to work, so it's source only.",
-  },
-  {
-    title: "A couple of circles",
+    title: "A Couple of Circles",
     folder: "a couple of circles",
     entry: "acoupleofcircles.html",
     date: "2026-08-25",
     tags: ["simulation", "art"],
     description:
-      "Ported from a Khan Academy ProcessingJS program. Thousands of circles roll around a white canvas, painting it with colors.",
+      "Remade this from my Khan Academy ProcessingJS program. Thousands of little circles paint a white canvas. Looks really nice when you wait long enough.",
   },
   {
-    title: "Pendulum control",
+    title: "Pendulum Control",
     folder: "pendulum control",
     entry: "control.html",
     date: "2026-07-17",
     tags: ["simulation", "physics"],
     description:
-      "A double pendulum attached to a car. Control thy pendulum...",
+      "A double pendulum attached to a self-driving car. This is a test of using natural selection (or whatever it's called) to get better and better constants. Control thy pendulum, my cars...",
   },
   {
     title: "Find the Connect 4",
@@ -71,16 +64,16 @@ window.PROJECTS = [
     date: "2026-07-02",
     tags: ["game"],
     description:
-      "A huge random grid with no connect-fours, except for exactly one. A Where's-Waldo of connect 4.",
+      "A huge connect-4 game with a win hidden somewhere inside it. A nice little game to play with others.",
   },
   {
-    title: "Room generation",
+    title: "Room Generation",
     folder: "room generation",
     entry: "roomgen.html",
     date: "2026-06-08",
     tags: ["procedural"],
     description:
-      "Generated rooms and alleyways that scale by 16 up or down, like a 2D version of Fractal Block World.",
+      "A test of generated rooms and alleyways which scale by 16 in both directions, like a 2D version of Fractal Block World.",
   },
   {
     title: "Suraida",
@@ -98,16 +91,24 @@ window.PROJECTS = [
     date: "2026-05-15",
     tags: ["game", "unfinished"],
     description:
-      "Memorize a grid of fish and mines before it's hidden, then translated, rotated, and shuffled. Very unfinished concept.",
+      "A grid fishing game where you have to memorize everything on the board while it translates, rotates, flips around. A very unfinished concept right now.",
   },
   {
-    title: "Bogosort",
+    title: "Theoretical Bogosort",
     folder: "bogosort",
     entry: "bogosort.html",
     date: "2026-05-05",
     tags: ["simulation", "math"],
     description:
-      "A bogosort that runs until it's solved, even when it turns theoretical: shuffling faster than a computer should be able to. Idea from swap.'s livestreams.",
+      "A bogosort that will run until it's solved. It becomes theoretical when it starts to shuffle more times than a computer should be able to in a year. Got the idea from swap.'s livestreams of running a bogosort until it solves.",
+  },
+  {
+    title: "Not-So-Randomwalk",
+    folder: "not so randomwalk",
+    entry: "main.html",
+    date: "2026-04-15",
+    tags: ["simulation", "first steps"],
+    description: "The second .html I ever made. Slightly different from the first one, many squares use their own little algorithm to eventually fill up the canvas with color.",
   },
   {
     title: "Randomwalk",
@@ -115,14 +116,6 @@ window.PROJECTS = [
     entry: "randomwalkindefinety.html",
     date: "2026-04-08",
     tags: ["simulation", "first steps"],
-    description: "The first .html I ever made.",
-  },
-  {
-    title: "Not so randomwalk",
-    folder: "not so randomwalk",
-    entry: "main.html",
-    date: "2026-04-15",
-    tags: ["simulation", "first steps"],
-    description: "The second .html I ever made.",
+    description: "The first .html I ever made. A little square randomly walks around a grid, painting colors, and if it gets stuck with colors all around it, it'll go to removing colors instead, and vice versa when it gets stuck.",
   },
 ];
