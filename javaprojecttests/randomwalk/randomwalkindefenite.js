@@ -42,9 +42,9 @@ window.onload = function () {
     var moves = 0;
 
     //stuffs
-    const borderwidth = 80;
-    const borderheight = 40;
-    const size = 10;
+    const borderwidth = 160;
+    const borderheight = 80;
+    const size = 5;
 
     // 2d vector
     var already = [];

@@ -56,6 +56,7 @@ window.PROJECTS = [
     folder: "pendulum control",
     entry: "control.html",
     date: "2026-07-17",
+    image: "pendulum control.png",
     tags: ["simulation", "physics"],
     description:
       "A double pendulum attached to a self-driving car. This is a test of using natural selection (or whatever it's called) to get better and better constants. Control thy pendulum, my cars...",
@@ -76,6 +77,7 @@ window.PROJECTS = [
     entry: "roomgen.html",
     date: "2026-06-08",
     tags: ["procedural"],
+    image: "roomgen.png",
     description:
       "A test of generated rooms and alleyways which scale by 16 in both directions, like a 2D version of Fractal Block World.",
   },
@@ -102,6 +104,8 @@ window.PROJECTS = [
     folder: "bogosort",
     entry: "bogosort.html",
     date: "2026-05-05",
+    image: "bogosort.png",
+    video: "bogosort.mp4",
     tags: ["simulation", "math"],
     description:
       "A bogosort that will run until it's solved. It becomes theoretical when it starts to shuffle more times than a computer should be able to in a year. Got the idea from swap.'s livestreams of running a bogosort until it solves.",
@@ -111,15 +115,21 @@ window.PROJECTS = [
     folder: "not so randomwalk",
     entry: "main.html",
     date: "2026-04-15",
+    image:"notsorandomwalk.png",
+    video:"notsorandomwalk.mp4",
     tags: ["simulation", "first steps"],
-    description: "The second .html I ever made. Slightly different from the first one, many squares use their own little algorithm to eventually fill up the canvas with color.",
+    description:
+      "The second .html I ever made. Slightly different from the first one, many squares use their own little algorithm to eventually fill up the canvas with color.",
   },
   {
     title: "Randomwalk",
     folder: "randomwalk",
     entry: "randomwalkindefinety.html",
     date: "2026-04-08",
+    image:"randomwalk.png",
+    video:"randomwalk.mp4",
     tags: ["simulation", "first steps"],
-    description: "The first .html I ever made. A little square randomly walks around a grid, painting colors, and if it gets stuck with colors all around it, it'll go to removing colors instead, and vice versa when it gets stuck.",
+    description:
+      "The first .html I ever made. A little square randomly walks around a grid, painting colors, and if it gets stuck with colors all around it, it'll go to removing colors instead, and vice versa when it gets stuck.",
   },
 ];
