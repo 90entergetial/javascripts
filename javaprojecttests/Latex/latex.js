@@ -434,5 +434,4 @@ window.onload = function () {
     UIbutton.addEventListener("click", toggleUI);
 
 };
-//we set the dark on fire
 // To start server, do "http-server" in .vscode terminal then open http://127.0.0.1:8080/main.html in browser

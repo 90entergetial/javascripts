@@ -17,6 +17,16 @@ window.onload = function () {
         size:80,
 
     }
+    var selected = {
+        x:2,
+        y:3
+    }
+
+    function mouse_hovered_over_grid(x, y){
+        selected.x = x;
+        selected.y = y;
+        console.log(x + "," + y);
+    }
 
     let contains = [];
     for(var i = 0; i < grid.x; i++) {
@@ -28,7 +38,6 @@ window.onload = function () {
     contains[3][3] = 0;
     contains[3][4] = 1;
     contains[3][2] = 1;
-    
     //make the grid
     var html_grid = document.getElementById("grid");
     while(html_grid.children.length < grid.y){
@@ -41,11 +50,23 @@ window.onload = function () {
             d.id = "square";
             d.style.width = grid.size + "px";
             d.style.height = grid.size + "px";
+
             c.appendChild(d);
         }
         html_grid.appendChild(c);
     }
     html_grid.style.transform = "translate(-50%, -50%)";
+
+    
+    for(var i = 0; i < grid.y; i++){
+        for(var j = 0; j < grid.x; j++) {
+            var selected_square = html_grid.children[i].children[j];
+            selected_square.addEventListener("mouseover", function(){
+                mouse_hovered_over_grid(j, i);
+            });
+        }
+    }
+            
 
     function update() {
         
@@ -54,6 +75,16 @@ window.onload = function () {
 
         grid.size = Math.min(canvas.width, canvas.height)/10;
         
+        for(var i = 0; i < grid.y; i++){
+            for(var j = 0; j < grid.x; j++) {
+                var selected_square = html_grid.children[i].children[j];
+                if(i == selected.y && j == selected.x) selected_square.style.backgroundColor = "rgb(112, 206, 206)";
+                else selected_square.style.backgroundColor = "rgb(85, 192, 192)";
+               
+                
+            }
+        }
+
         //box + load
         // for(let i = 0; i < grid.x; i++) {
         //     for(let j = 0; j < grid.y; j++) {
@@ -75,10 +106,10 @@ window.onload = function () {
         // }
 
         //mouse
-        ctx.fillStyle = "rgb(200, 10, 10)"
-        ctx.beginPath();
-        ctx.arc(mouseX, mouseY, 5, 0, Math.PI*2);
-        ctx.fill();
+        // ctx.fillStyle = "rgb(200, 10, 10)"
+        // ctx.beginPath();
+        // ctx.arc(mouseX, mouseY, 5, 0, Math.PI*2);
+        // ctx.fill();
         
         requestAnimationFrame(update);
     }

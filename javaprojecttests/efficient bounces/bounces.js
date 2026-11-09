@@ -27,7 +27,7 @@ window.onload = function () {
     var totalpower = 0n;
     var totalhits = 0n;
 
-    var amountofboxes = 3;
+    var amountofboxes = 1;
 
     //optional box titles set by me
     var boxtitles = ["Fibonacci", "Triangle", "Powers of Two"];
@@ -145,10 +145,10 @@ window.onload = function () {
         ball.push(newBall);
         return newBall;
     }
-
-    addBall("fibonacci", 0,1/3);
-    addBall("triangle", 1,4.195215326500528/3);
-    addBall("powers of two", 2,1.2516743213463186/3);
+    addBall("3rd Tetration", 0, 1/10);
+    //addBall("fibonacci", 0,1/3);
+    //addBall("triangle", 1,4.195215326500528/3);
+    //addBall("powers of two", 2,1.2516743213463186/3);
 
     //before anything, change the damage of every ball to the 0th term of the sequence.
     for(var i = 0; i < ball.length; i++){
@@ -485,5 +485,4 @@ window.onload = function () {
     // start boi
     update();
 };
-//we set the dark on fire
 // To start server, do "http-server" in .vscode terminal then open http://127.0.0.1:8080/main.html in browser

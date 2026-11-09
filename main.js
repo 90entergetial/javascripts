@@ -72,11 +72,24 @@ function buildProjectCards() {
         container.appendChild(card);
     });
 }
+function showBackgroundVideos(){
+
+    var image = document.createElement("video");
+    image.id = "video";
+    image.src = "images/LaTeX.mp4";
+    image.autoplay = true;
+    image.muted = true;
+    image.loop = true;
+    image.playsInline = true;
+    var d_title = document.createElement("d_title");
+    d_title.appendChild(image);
+
+}
 
 window.onload = function () {
 
     buildProjectCards();
-
+    showBackgroundVideos();
     function showbodyDiv(){
         var bodyDiv = document.getElementById("body");
         bodyDiv.style.display = "block";
