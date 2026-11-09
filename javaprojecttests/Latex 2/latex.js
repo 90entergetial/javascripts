@@ -32,9 +32,11 @@ window.onload = function () {
 
     function RemoveItem(item) {
         console.log(item)
+        // marginLeft is a string like "60px", so turn it into a number
+        var marg = parseFloat(item.style.marginLeft) || 0;
         var goto = item.querySelector(".katex-display").getBoundingClientRect().width;
         ramptovalue(1, 0, 500, alpha => { item.style.color = `rgba(11, 12, 35, ${alpha})` }, "ease in out");
-        ramptovalue(marginspace, 0, 500, a => { item.style.marginLeft = `${a}px` }, "ease in out");
+        ramptovalue(marg, 0, 500, a => { item.style.marginLeft = `${a}px` }, "ease in out");
         ramptovalue(goto, 0, 500, a => { item.style.width = `${a}px` }, "ease in out");
         setTimeout(() => {
             container.removeChild(item);
