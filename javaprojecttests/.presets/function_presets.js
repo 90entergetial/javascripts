@@ -150,3 +150,36 @@ function timeelapsed(difference) {
     }
 
 }
+function tovalue(from, to, duration, onUpdate, ramptype, onDone) {
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1); // 0 → 1
+    let eased;
+    switch (ramptype) {
+      case "ease in out": eased = Math.sin(t * Math.PI / 2) ** 2; break;
+      case "ease in":     eased = Math.sin(t * Math.PI / 2 - Math.PI / 2) + 1; break;
+      case "ease out":    eased = Math.sin(t * Math.PI / 2); break;
+      default:            eased = t;
+    }
+    onUpdate(from + (to - from) * eased);
+    if (t < 1) requestAnimationFrame(step);
+    else if (onDone) onDone();
+  }
+  requestAnimationFrame(step);
+  //this is quite an interesting function:
+  //from: starting number
+  //to: ending number
+  //duration: millseconds of time
+  //onUpdate: runs every frame
+  //ramptype (optional): "linear" (default), "ease in", "ease out", or "ease in out"
+  //onDone (optional): runs a function on done
+
+  //For ramping a variable, do this:
+  //ramptovalue(0, 1, 500, alpha => { a.style.color = `rgba(11, 12, 35, ${alpha})`;});
+  //ramptovalue(0, 10, 2000, v => speed = v, "ease in out");
+  //ramptovalue(0, 10, 2000, v => speed = v, undefined, () => console.log("done")); // linear + onDone
+}
+function inbetween(num, min, max){
+    if(num <= max && num >= min) return true;
+    return false;
+}

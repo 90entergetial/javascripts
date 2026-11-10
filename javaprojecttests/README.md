@@ -42,6 +42,8 @@ Nov-11/01/2026 - If you thought PlayNote couldn't have even more aura, it now ca
 
 Nov-11/02/2026 - Dang it. I switched the "first" and "second" in "not so randomwalk" and "randomwalk".
 
+Nov-11/09/2026 - TWO NEW FOES HAVE APPEARED! Make Ramptovalue and inbetween functions for presets.
+
 *Note:*
 
 Usually coders who want to make games just put all of their ideas into a prompt and send it along with AI. This would be good if you're making mass projects; sending them alnog to show others. This isn't the way I make projects. I try to make the ideas as best as I can manually and if I get completley stuck (like moving the cursor in the LaTeX project.. which, honestly, I didn't even know you could do that) I'll ask AI to do help and I'll try to understand it (the Latex one is probably sorcery though). These projects are mostly for me; fun little games and simulations that seem like interesting things to make. I've been making these little projects for a little over 6 years (see my Khan Academy account!! https://www.khanacademy.org/profile/kaid_536117158981552296139289/projects) and have learned ~~to not use double-tilde to round numbers, but instead, use the function called "round" >~~ a lot of conepts of JavaScript and Python with the huge help of other people and their projects!

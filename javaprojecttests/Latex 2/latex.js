@@ -20,8 +20,10 @@ window.onload = function () {
     // });
 
     var container = document.getElementById("container");
-    
-    var LaTex = String.raw`x ( b {-} b 2 \hat{} 4 a c * * - \sqrt{} \pm ){} 2 a * / = END`;
+    //quadratic: x ( b {-} b 2 \hat{} 4 a c * * - \sqrt{} \pm ){} 2 a * / =
+    //integer: \int_{5}^{3} ( 1 1 3 / * ) dx
+    //cos: x ( 3 5 \int x cos(...) 4 \hat{} dx ){} =
+    var LaTex = String.raw`x ( b {-} b 2 \hat{} 4 a c * * - \sqrt{} \pm ){} 2 a * / =`;
     var Excluded_LaTex = LaTex.split(" ");
     var split_LaTex = LaTex.split(" ");
     var onindex = 0;
@@ -150,6 +152,22 @@ window.onload = function () {
                 console.log(split_LaTex); 
                 onindex -= 2;
                 
+            } else if(current == String.raw`\int`){
+                let a = split_LaTex[onindex-2];
+                let b = split_LaTex[onindex-3];
+                let c = String.raw`\int_{${b}}^{${a}}`;
+                console.log(c); 
+                RemoveItem(container.children[onindex-1]);
+                RemoveItem(container.children[onindex-2]);
+                RemoveItem(container.children[onindex-3]);
+                if(onindex == 3) AddItem(String.raw`${c}`, false);
+                else AddItem(String.raw`${c}`);
+                
+                //gotta update it now
+                split_LaTex = [...split_LaTex.slice(0, onindex-3), String.raw`${c}`, ...split_LaTex.slice(onindex)];
+                console.log(split_LaTex); 
+                onindex -= 2;
+                
             } else if(current == String.raw`\pm`){
                 let c = split_LaTex[onindex-2];
                 RemoveItem(container.children[onindex-1]);
@@ -234,17 +252,20 @@ window.onload = function () {
                 onindex -= 1;
                 
             } else if(current == String.raw`=`){
-                let c = split_LaTex[onindex-2];
+                let a = split_LaTex[onindex-2];
+                let b = split_LaTex[onindex-3];
                 RemoveItem(container.children[onindex-1]);
                 RemoveItem(container.children[onindex-2]);
-                if(onindex == 2){
-                AddItem(String.raw`= ${c}`, false);
+                RemoveItem(container.children[onindex-3]);
+                c = String.raw`${b}=${a}`
+                if(onindex == 3){
+                AddItem(c, false);
                 } else {
-                AddItem(String.raw`= ${c}`);
+                AddItem(c);
                 }
                 
                 //gotta update it now
-                split_LaTex = [...split_LaTex.slice(0, onindex-2), String.raw`= ${c}`, ...split_LaTex.slice(onindex)];
+                split_LaTex = [...split_LaTex.slice(0, onindex-2), c, ...split_LaTex.slice(onindex)];
                 console.log(split_LaTex);
                 onindex -= 1;
                 
@@ -261,6 +282,21 @@ window.onload = function () {
                 console.log(split_LaTex);
                 onindex -= close - open;
 
+            } else if(current == String.raw`cos(...)`){
+                let c = split_LaTex[onindex-2];
+                RemoveItem(container.children[onindex-1]);
+                RemoveItem(container.children[onindex-2]);
+                if(onindex == 2){
+                AddItem(String.raw`cos(${c})`, false);
+                } else {
+                AddItem(String.raw`cos(${c})`);
+                }
+                
+                //gotta update it now
+                split_LaTex = [...split_LaTex.slice(0, onindex-2), String.raw`cos(${c})`, ...split_LaTex.slice(onindex)];
+                console.log(split_LaTex);
+                onindex -= 1;
+                
             } else {
                 please_hold = false;
             }
@@ -280,6 +316,8 @@ window.onload = function () {
         String.raw`\sqrt{}`,
         String.raw`)`,
         String.raw`){}`,
+        String.raw`\int`,
+        String.raw`cos(...)`,
         String.raw`END`,
     ];
     function AddItem(display, aa=true) {
@@ -316,9 +354,9 @@ window.onload = function () {
     function pplaynote(combining=false) {
         setTimeout(() => {
         if(combining){
-            playNote(2**((69+steps)/12), 0.5, 10, 0, 500);
+            playNote(2**((85+steps-12)/12), 0.5, 10, 0, 500);
         } else {
-            playNote(2**((81+steps)/12), 0.5, 10, 0, 500);
+            playNote(2**((85+steps)/12), 0.5, 10, 0, 500);
         }
         }, 100);
     }

@@ -1,4 +1,15 @@
-window.PROJECTS = [
+window.PROJECTS = [,
+  {
+    title: "LaTeX 2",
+    folder: "Latex 2",
+    entry: "latex.html",
+    date: "2026-11-08",
+    tags: ["math", "simulation"],
+    image: "LaTeX 2.png",
+    video: "LaTeX 2.mp4",
+    description:
+      "A test of a step-by-step process of putting in a forumla using Reverse Polish Notation using LaTeX.",
+  },
   {
     title: "Efficient Bounces",
     folder: "efficient bounces",
@@ -86,6 +97,8 @@ window.PROJECTS = [
     folder: "Suraida",
     entry: "Suraida.html",
     date: "2026-05-28",
+    image: "suraida.png",
+    video: "suraida.mp4",
     tags: ["game", "puzzle", "bonk.io"],
     description:
       "The interactive version of HEROIII's co-op sliding puzzle maps from bonk.io. Had to give it a cool Japanese name.",
@@ -96,6 +109,7 @@ window.PROJECTS = [
     entry: "fishinggame.html",
     date: "2026-05-15",
     tags: ["game", "unfinished"],
+    image: "fishing game.png",
     description:
       "A grid fishing game where you have to memorize everything on the board while it translates, rotates, flips around. A very unfinished concept right now.",
   },
