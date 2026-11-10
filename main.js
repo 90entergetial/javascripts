@@ -72,30 +72,105 @@ function buildProjectCards() {
         container.appendChild(card);
     });
 }
+// Swaps the title text: the old text slides down and fades out
+// while the new text slides down from the top and fades in (1 second).
+function changeTitleWithSlide(atitle, newText){
+    var duration = 1000;
+    var distance = "80px";
+
+    // copy of the old title, laid exactly on top of the real one
+    var ghost = atitle.cloneNode(true);
+    ghost.removeAttribute("id");
+    ghost.classList.add("title-ghost");
+    ghost.style.position = "absolute";
+    ghost.style.margin = "0";
+    ghost.style.top = atitle.offsetTop + "px";
+    ghost.style.left = atitle.offsetLeft + "px";
+    ghost.style.width = atitle.offsetWidth + "px";
+    ghost.style.pointerEvents = "none";
+    atitle.parentNode.appendChild(ghost);
+
+    ghost.animate(
+        [
+            { transform: "translateY(0)", opacity: 1 },
+            { transform: `translateY(${distance})`, opacity: 0 }
+        ],
+        { duration: duration, easing: "ease-in-out", fill: "forwards" }
+    ).onfinish = function(){ ghost.remove(); };
+
+    atitle.innerHTML = newText;
+    atitle.animate(
+        [
+            { transform: `translateY(-${distance})`, opacity: 0 },
+            { transform: "translateY(0)", opacity: 1 }
+        ],
+        { duration: duration, easing: "ease-in-out" }
+    );
+}
+var will_pick = 0;
+function rotateThroughVideos(pic, randomlyselectfrom){
+    var image = document.getElementById("video");
+    var pick = pic;
+    setTimeout(function(){
+        
+        will_pick = randomlyselectfrom[Math.floor(Math.random() * randomlyselectfrom.length)];
+        while(will_pick == pick){
+            will_pick = randomlyselectfrom[Math.floor(Math.random() * randomlyselectfrom.length)];
+        }
+        pick = will_pick;
+        image.src = "images/" + encodeURIComponent(pick[1]);
+        image.style.filter = "opacity(0.1)";
+
+        var atitle = document.getElementById("title");
+        changeTitleWithSlide(atitle, `A Test of ${pick[0]}.`);
+
+    }, 1000);
+    setTimeout(function(){
+
+        image.style.filter = "opacity(0)";
+        
+    }, 9000);
+
+}
 function showBackgroundVideos(){
 
     var image = document.createElement("video");
     image.id = "video";
-    image.src = "images/LaTeX.mp4";
+    image.src = "images/LaTeX 2.mp4";
     image.autoplay = true;
     image.muted = true;
     image.loop = true;
     image.playsInline = true;
-    var d_title = document.createElement("d_title");
+    var d_title = document.getElementById("d_title");
     d_title.appendChild(image);
+
+    // [title, video] for every project that has a video, e.g. ["LaTeX 2", "LaTeX 2.mp4"]
+    let randomlyselectfrom = window.PROJECTS
+        .filter(function (project) { return project && project.video; })
+        .map(function (project) { return [project.title, project.video]; });
+
+    will_pick = randomlyselectfrom[Math.floor(Math.random() * randomlyselectfrom.length)];
+    setTimeout(function(){
+        rotateThroughVideos(will_pick, randomlyselectfrom);
+
+        setInterval(function(){
+            
+            rotateThroughVideos(will_pick, randomlyselectfrom);
+
+        }, 12000);
+    }, 5000);
 
 }
 
 window.onload = function () {
 
     buildProjectCards();
-    showBackgroundVideos();
     function showbodyDiv(){
         var bodyDiv = document.getElementById("body");
         bodyDiv.style.display = "block";
     }
 
-    var randomtext = ["This is a Title.", "Hey, I'm a Title!","Great day today, huh?","Insert Title Here.","Do Parrots Even Know They're Alive?","Beep Beep Boop Boop Beep.","If you want to make a fraction in LaTeX, do \\frac{x}{y}.","Whoop, Seems This Title is Random.","A Test of Python. Just kidding."];
+    var randomtext = ["This is a Title.", "Hey, I'm a Title!","Great day today, huh?","Insert Title Here.","Do Parrots Even Know They're Alive?","Beep Beep Boop Boop Beep.","If you want to make a fraction in LaTeX, do \\frac{x}{y}.","Whoop, Seems This Title is Random.","A Test of Python. Just kidding.","This Title Will Get Removed After 3 Seconds.","Look, Mom! I'm a Title!","I hope you got 8 hours of sleep yesterday.."];
     var atitle = document.getElementById("title");
     var r = Math.floor(Math.random()*randomtext.length);
 
@@ -116,6 +191,12 @@ window.onload = function () {
         var alittledesc = document.getElementById("littledesc");
         alittledesc.innerHTML = "vvv Scroll Down! vvv";
         alittledesc.style.color = "rgba(255, 255, 255, 0.1)";
+        // clicking the text smoothly scrolls to the section right below d_title
+        alittledesc.classList.add("clickable"); // turns on the pointer cursor + hover style
+        alittledesc.onclick = function () {
+            document.getElementById("body").scrollIntoView({ behavior: "smooth" });
+        };
+        showBackgroundVideos();
     }
     function removeTitle(sliced=1, timelen=150){
         atitle.innerHTML = randomtext[r].substring(sliced);

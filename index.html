@@ -20,13 +20,26 @@
       background-color: rgb(27, 21, 43);
       width:100%;
       height: 100vh;
-      overflow: auto;
+      overflow:hidden;
       display: flex;
       justify-content: center;
       align-items: center;
       flex-direction: column;
+      position: relative; /* makes #video position itself inside this div */
+      isolation: isolate; /* keeps the video's z-index:-1 inside this div, above its background color */
     }
-    #title {
+    #video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1; /* behind the title text */
+      object-fit: cover;
+      filter:opacity(0);
+      overflow:hidden;
+      transition: all ease-in-out 3s;
+    }
+    #title, .title-ghost {
         font-size: 100px;
         font-weight: bold;
         color:aliceblue;
@@ -51,6 +64,13 @@
         text-align: center;
         overflow: scroll;
         transition: all 2s ease-in-out;
+    }
+    #littledesc.clickable {
+      cursor: pointer;
+    }
+    #littledesc.clickable:hover {
+      color: rgba(255, 255, 255, 0.4) !important;
+      transition: all 0.2s ease-in-out;
     }
     #projects {
       display: grid;
@@ -144,11 +164,6 @@
       margin: 0px;
       color: rgba(255, 255, 255, 0.3);
       padding-left:5px;
-    }
-    #video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
     }
     </style>
 </head>

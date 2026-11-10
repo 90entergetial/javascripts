@@ -1,4 +1,4 @@
-window.PROJECTS = [,
+window.PROJECTS = [
   {
     title: "LaTeX 2",
     folder: "Latex 2",
