@@ -22,3 +22,4 @@ Nov-11/16/2026 - Slight break (Definetly not just me forgetting)
 - Deployed on vercel... yayyy
 - Hid .node modules, also please keep a note here that i should compress the videos BECAUSE THEY SUM TO 100 MB. JEEZ.
 - Showing how scared I am about spaces, changing spaces to dashes
+- Edit: videos are now 33 MB, which is like, somewhat better

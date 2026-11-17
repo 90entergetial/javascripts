@@ -101,6 +101,7 @@ function changeTitleWithSlide(atitle, newText){
     ghost.style.pointerEvents = "none";
     atitle.parentNode.appendChild(ghost);
 
+    //this is also cool!!!!
     ghost.animate(
         [
             { transform: "translateY(0)", opacity: 1 },
@@ -183,7 +184,21 @@ window.onload = function () {
         bodyDiv.style.display = "block";
     }
 
-    var randomtext = ["This is a Title.", "Hey, I'm a Title!","Great day today, huh?","Insert Title Here.","Do Parrots Even Know They're Alive?","Beep Beep Boop Boop Beep.","If you want to make a fraction in LaTeX, do \\frac{x}{y}.","Whoop, Seems This Title is Random.","A Test of Python. Just kidding.","This Title Will Get Removed After 3 Seconds.","Look, Mom! I'm a Title!","I hope you got 8 hours of sleep yesterday.."];
+    var randomtext = [
+        "This is a Title.", 
+        "Hey, I'm a Title!",
+        "Great day today, huh?",
+        "Insert Title Here.",
+        "Do Parrots Even Know They're Alive?",
+        "Beep Beep Boop Boop Beep.",
+        "If you want to make a fraction in LaTeX, do \\frac{x}{y}.",
+        "Whoop, Seems This Title is Random.",
+        "A Test of Python. Just kidding.",
+        "This Title Will Get Removed After 3 Seconds.",
+        "Look, Mom! I'm a Title!",
+        "I hope you got 8 hours of sleep yesterday..",
+        "Laughter Is The Best Medicine..",
+        "I Ionized a Compass Earlier. I Called it Compassion.",];
     var atitle = document.getElementById("title");
     var r = Math.floor(Math.random()*randomtext.length);
 
