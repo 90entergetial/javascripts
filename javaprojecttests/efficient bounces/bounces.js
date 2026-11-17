@@ -27,94 +27,22 @@ window.onload = function () {
     var totalpower = 0n;
     var totalhits = 0n;
 
-    var amountofboxes = 1;
-
+    var amountofboxes = 3;
     //optional box titles set by me
-    var boxtitles = ["Fibonacci", "Triangle", "Powers of Two"];
+    var boxtitles = [];
     var textsize = 48;
 
-    var boxparts = {
-        w:500,
-        h:900,
-        elastic: 0.01,
-        blocks: [100n, 10n**5n, 10n**13n],
-        box_seperation: 1.3,
-    }
-    //making the stats and blocks divs and blocktitles
-    var stats = document.getElementById("blockstats");
-    while(stats.children.length < amountofboxes){
-        const para = document.createElement("div");
-        para.style.position = "absolute";
+    var firstwin = [-1];
+    var run = false;
+    var play = -3;
+    var page = "run";
 
-        const para2 = document.createElement("p");
-        para2.id = "damage";
-        para2.style.position = "absolute";
-        para2.innerHTML = "Power: " + addcommas(totalpower);
-        para.appendChild(para2);
-        const para3 = document.createElement("p");
-        para3.id = "hits";
-        para3.style.position = "absolute";
-        para3.innerHTML = "Hits: " + addcommas(totalhits);
-        para.appendChild(para3);
-
-
-        stats.appendChild(para);
-    }
-    var blocks = document.getElementById("blocks");
-    while(blocks.children.length < amountofboxes){
-        const para = document.createElement("div");
-        para.style.position = "absolute";
-        blocks.appendChild(para);
-    }
-    var blocktitles = document.getElementById("blocktitles");
-    while(blocktitles.children.length < amountofboxes){
-        // position is set every frame in _blocks(), once the canvas has its real size
-        var btitle = document.createElement("p");
-        btitle.style.position = "absolute";
-        btitle.style.color = "rgba(0, 0, 0, 0.1)";
-        btitle.style.boxSizing = "border-box";
-        btitle.style.width = boxparts.w + "px";
-        btitle.style.padding = "5px";
-        btitle.style.fontSize = textsize + "px";
-        //btitle.innerHTML = "Power: " + bigaddcommas(ball[0].damage);
-        btitle.innerHTML = boxtitles[blocktitles.children.length];
-        blocktitles.appendChild(btitle);
-    }
-    var blockswins = document.getElementById("blockwins");
-    while(blockswins.children.length < amountofboxes){
-        // position is set every frame in _blocks(), once the canvas has its real size
-        var btitle = document.createElement("p");
-        btitle.style.position = "absolute";
-        btitle.style.color = "rgba(0, 0, 0, 0.1)";
-        btitle.style.boxSizing = "border-box";
-        btitle.style.width = boxparts.w + "px";
-        btitle.style.padding = "5px";
-        btitle.style.fontSize = textsize + "px";
-        //btitle.innerHTML = "Power: " + bigaddcommas(ball[0].damage);
-        blockswins.appendChild(btitle);
-    }
-    //actual boxes
-    var box = []
-    for(var i = 0; i < amountofboxes; i++){
-        box.push({
-            w:boxparts.w,
-            h:boxparts.h,
-            xoffset: ((i+0.5)-amountofboxes/2)*boxparts.w*boxparts.box_seperation,
-            yoffset: 0,
-            elastic: boxparts.elastic,
-            blocks: boxparts.blocks.slice(),
-            hits: 0n,
-            damage: 0n,
-            time: 0,
-            done: false,
-            color: "rgb(19, 19, 20)",
-            mutedcolor: "rgba(19, 19, 20, 0.3)",
-            hitcolor: "rgba(255, 255, 255, 0.2)",
-            hit_animation: 0,
-        });
-    }
-
+    var boxparts = {}
     var ball = [];
+    //actual boxes
+    var box = [];
+    var heights = [];
+
 
     // Adds a separate copy of a preset ball (from ball_presets.js) into box number boxid.
     function addBall(type, boxid, speedmultiplier=1) {
@@ -144,24 +72,6 @@ window.onload = function () {
 
         ball.push(newBall);
         return newBall;
-    }
-    addBall("3rd Tetration", 0, 1/10);
-    //addBall("fibonacci", 0,1/3);
-    //addBall("triangle", 1,4.195215326500528/3);
-    //addBall("powers of two", 2,1.2516743213463186/3);
-
-    //before anything, change the damage of every ball to the 0th term of the sequence.
-    for(var i = 0; i < ball.length; i++){
-        ball[i].damage = ball[i].sequence(0n);
-        box[ball[i].in_box].damage += ball[i].damage;
-        totalpower += ball[i].damage;
-    }
-
-    for(var i = 0; i < box.length; i++){
-        var heights = [];
-        for(var j = 0; j < box[i].blocks.length; j++){
-            heights.push(150*((j)-box[i].blocks.length/2))
-        }
     }
 
     function _blocks(boxi) {
@@ -259,7 +169,6 @@ window.onload = function () {
         }
         box[boxi].blocks[i] = cst(box[boxi].blocks[i], 0, box[boxi].blocks[i]);
     }
-
     // The y the ball's center sits at when touching the floor:
     // the top of the first live block, or the bottom of the box if none are left.
     function floorY(B, box_) {
@@ -275,7 +184,6 @@ window.onload = function () {
 
     const REST_SPEED = 0; // bounces slower than this count as "at rest"
     const MAX_HITS_PER_STEP = 2000000; // safety cap so a step can never loop forever
-
     function step(B, i) {
 
         // the box the ball is in
@@ -371,86 +279,220 @@ window.onload = function () {
         }
 
     }
-    var firstwin = [-1];
-    var run = true;
-    var play = -3;
-    // start after some time
-    setInterval(() => {
-        if(run) play+=1;
-        else play = -3;
-    }, 250);
+
+    function set_up_run(){
+
+        //initialize
+        totalpower = 0n;
+        totalhits = 0n;
+        firstwin = [-1];
+        play = -3;
+
+        //set by the person
+        amountofboxes = 3;
+        boxtitles = ["Fibonacci", "Triangle", "Powers of Two"];
+        textsize = 48;
+        
+        boxparts = {
+            w:500,
+            h:900,
+            elastic: 0.01,
+            blocks: [100n, 10n**5n, 10n**13n],
+            box_seperation: 1.3,
+        }
+        //making the stats and blocks divs and blocktitles
+        stats = document.getElementById("blockstats");
+        stats.replaceChildren();
+        while(stats.children.length < amountofboxes){
+            const para = document.createElement("div");
+            para.style.position = "absolute";
+
+            const para2 = document.createElement("p");
+            para2.id = "damage";
+            para2.style.position = "absolute";
+            para2.innerHTML = "Power: " + addcommas(totalpower);
+            para.appendChild(para2);
+            const para3 = document.createElement("p");
+            para3.id = "hits";
+            para3.style.position = "absolute";
+            para3.innerHTML = "Hits: " + addcommas(totalhits);
+            para.appendChild(para3);
+
+
+            stats.appendChild(para);
+        }
+        blocks = document.getElementById("blocks");
+        blocks.replaceChildren();
+        while(blocks.children.length < amountofboxes){
+            const para = document.createElement("div");
+            para.style.position = "absolute";
+            blocks.appendChild(para);
+        }
+        blocktitles = document.getElementById("blocktitles");
+        blocktitles.replaceChildren();
+        while(blocktitles.children.length < amountofboxes){
+            // position is set every frame in _blocks(), once the canvas has its real size
+            var btitle = document.createElement("p");
+            btitle.style.position = "absolute";
+            btitle.style.color = "rgba(0, 0, 0, 0.1)";
+            btitle.style.boxSizing = "border-box";
+            btitle.style.width = boxparts.w + "px";
+            btitle.style.padding = "5px";
+            btitle.style.fontSize = textsize + "px";
+            //btitle.innerHTML = "Power: " + bigaddcommas(ball[0].damage);
+            btitle.innerHTML = boxtitles[blocktitles.children.length];
+            blocktitles.appendChild(btitle);
+        }
+        blockswins = document.getElementById("blockwins");
+        blockswins.replaceChildren();
+        while(blockswins.children.length < amountofboxes){
+            // position is set every frame in _blocks(), once the canvas has its real size
+            var btitle = document.createElement("p");
+            btitle.style.position = "absolute";
+            btitle.style.color = "rgba(0, 0, 0, 0.1)";
+            btitle.style.boxSizing = "border-box";
+            btitle.style.width = boxparts.w + "px";
+            btitle.style.padding = "5px";
+            btitle.style.fontSize = textsize + "px";
+            //btitle.innerHTML = "Power: " + bigaddcommas(ball[0].damage);
+            blockswins.appendChild(btitle);
+        }
+        //actual boxes
+        box = []
+        ball = [];
+        heights = [];
+        for(var i = 0; i < amountofboxes; i++){
+            box.push({
+                w:boxparts.w,
+                h:boxparts.h,
+                xoffset: ((i+0.5)-amountofboxes/2)*boxparts.w*boxparts.box_seperation,
+                yoffset: 0,
+                elastic: boxparts.elastic,
+                blocks: boxparts.blocks.slice(),
+                hits: 0n,
+                damage: 0n,
+                time: 0,
+                done: false,
+                color: "rgb(19, 19, 20)",
+                mutedcolor: "rgba(19, 19, 20, 0.3)",
+                hitcolor: "rgba(255, 255, 255, 0.2)",
+                hit_animation: 0,
+            });
+        }
+        for(var i = 0; i < box.length; i++){
+            heights = [];
+            for(var j = 0; j < box[i].blocks.length; j++){
+                heights.push(150*((j)-box[i].blocks.length/2))
+            }
+        }
+
+
+        addBall("fibonacci", 0,1);
+        addBall("fibonacci", 1,1/2);
+        addBall("fibonacci", 2,1/4);
+        //addBall("fibonacci", 0,1/3);
+        //addBall("triangle", 1,4.195215326500528/3);
+        //addBall("powers of two", 2,1.2516743213463186/3);
+
+        //before anything, change the damage of every ball to the 0th term of the sequence.
+        for(var i = 0; i < ball.length; i++){
+            ball[i].damage = ball[i].sequence(0n);
+            box[ball[i].in_box].damage += ball[i].damage;
+            totalpower += ball[i].damage;
+        }
+
+        // start after some time
+        setInterval(() => {
+            if(run) play+=1;
+            else play = -3;
+        }, 250);
+
+        //can now run
+        run = true;
+
+
+    }
 
     function update() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        if(play >= 0) {
-            //play the ones by the amount in each box, not all of them so one doesn't start before the other
-            var insections = [];
-            for(var i = 0; i < amountofboxes; i++){
-                insections.push([]);
-            }
-            for(var i = 0; i < ball.length; i++){
-                insections[ball[i].in_box].push(i);
-            }
 
-            for(var j = 0; j < insections.length; j++){
-                for(var i = 0; i < Math.min(play, insections[j].length); i++){
-                    step(ball[insections[j][i]], insections[j][i]);
-                }
-            }
-        }
         //bg
         ctx.fillStyle = "rgb(222, 226, 240)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        for(var i = 0; i < box.length; i++){
+        if(page == "run"){
 
-            //get the average color of all the balls inside the box
-            var r = 0, g = 0, b = 0, count = 0;
-            for(var j = 0; j < ball.length; j++){
-                if(ball[j].in_box == i){
-                    count+=1;
-                    var rgb = toRGB(ball[j].color);
-                    r += rgb[0];
-                    g += rgb[1];
-                    b += rgb[2];
+            if(run === false){
+                set_up_run();
+            } else {
+                if(play >= 0) {
+                    //play the ones by the amount in each box, not all of them so one doesn't start before the other
+                    var insections = [];
+                    for(var i = 0; i < amountofboxes; i++){
+                        insections.push([]);
+                    }
+                    for(var i = 0; i < ball.length; i++){
+                        insections[ball[i].in_box].push(i);
+                    }
+
+                    for(var j = 0; j < insections.length; j++){
+                        for(var i = 0; i < Math.min(play, insections[j].length); i++){
+                            step(ball[insections[j][i]], insections[j][i]);
+                        }
+                    }
+                }
+                
+                for(var i = 0; i < box.length; i++){
+
+                    //get the average color of all the balls inside the box
+                    var r = 0, g = 0, b = 0, count = 0;
+                    for(var j = 0; j < ball.length; j++){
+                        if(ball[j].in_box == i){
+                            count+=1;
+                            var rgb = toRGB(ball[j].color);
+                            r += rgb[0];
+                            g += rgb[1];
+                            b += rgb[2];
+                        }
+                    }
+                    if(count == 0) {
+                        box[i].color = "rgb(19, 19, 20)"; // empty box: avoid dividing by 0
+                        box[i].mutedcolor = "rgba(19, 19, 20, 0.3)";
+                        box[i].hitcolor = "rgb(255, 255, 255)";
+                    } else {
+                        box[i].color = "rgb(" + (r/count) + ", " + (g/count) + ", " + (b/count) + ")";
+                        box[i].mutedcolor = "rgba(" + (r/count) + ", " + (g/count) + ", " + (b/count) + ", 0.3)";
+                        box[i].hitcolor = "rgb(" + ((r*(1+box[i].hit_animation/200))/count) + ", " + ((g*(1+box[i].hit_animation/200))/count) + ", " + ((b*(1+box[i].hit_animation/200))/count) + ")";
+                    }
+
+                    if(box[i].hit_animation > 0) box[i].hit_animation -= 1;
+                    if(box[i].hit_animation <= 0) box[i].hit_animation = 0;
+
+                    ctx.fillStyle = "rgb(19, 19, 20)";
+                    ctx.fillRect(canvas.width/2-box[i].w/2-15+box[i].xoffset,canvas.height/2-box[i].h/2-15+box[i].yoffset, box[i].w+30, box[i].h+30);
+                    
+                    ctx.fillStyle = box[i].color;
+                    ctx.fillRect(canvas.width/2-box[i].w/2-10+box[i].xoffset,canvas.height/2-box[i].h/2-10+box[i].yoffset, box[i].w+20, box[i].h+20);
+
+                    ctx.fillStyle = box[i].hitcolor;
+                    ctx.fillRect(canvas.width/2-box[i].w/2-10+box[i].xoffset,canvas.height/2-box[i].h/2-10+box[i].yoffset, box[i].w+20, box[i].h+20);
+                    
+                    ctx.fillStyle = box[i].color;
+                    ctx.fillRect(canvas.width/2-box[i].w/2+box[i].xoffset,canvas.height/2-box[i].h/2+box[i].yoffset, box[i].w, box[i].h);
+                    ctx.fillStyle = "rgba(222, 226, 240, 0.98)";
+                    ctx.fillRect(canvas.width/2-box[i].w/2+box[i].xoffset,canvas.height/2-box[i].h/2+box[i].yoffset, box[i].w, box[i].h);
+                    _blocks(i);
+                    if(!box[i].done && run && play >= 0) box[i].time += 1; // in frames
+                }
+                //ball
+                for(var i = 0; i < ball.length; i++){
+                ctx.fillStyle = ball[i].color;
+                ctx.beginPath();
+                ctx.arc(canvas.width/2-ball[i].x+box[ball[i].in_box].xoffset, canvas.height/2-ball[i].y+box[ball[i].in_box].yoffset, ball[i].r, 0, Math.PI*2);
+                ctx.fill();
                 }
             }
-            if(count == 0) {
-                box[i].color = "rgb(19, 19, 20)"; // empty box: avoid dividing by 0
-                box[i].mutedcolor = "rgba(19, 19, 20, 0.3)";
-                box[i].hitcolor = "rgb(255, 255, 255)";
-            } else {
-                box[i].color = "rgb(" + (r/count) + ", " + (g/count) + ", " + (b/count) + ")";
-                box[i].mutedcolor = "rgba(" + (r/count) + ", " + (g/count) + ", " + (b/count) + ", 0.3)";
-                box[i].hitcolor = "rgb(" + ((r*(1+box[i].hit_animation/200))/count) + ", " + ((g*(1+box[i].hit_animation/200))/count) + ", " + ((b*(1+box[i].hit_animation/200))/count) + ")";
-            }
-
-            if(box[i].hit_animation > 0) box[i].hit_animation -= 1;
-            if(box[i].hit_animation <= 0) box[i].hit_animation = 0;
-
-            ctx.fillStyle = "rgb(19, 19, 20)";
-            ctx.fillRect(canvas.width/2-box[i].w/2-15+box[i].xoffset,canvas.height/2-box[i].h/2-15+box[i].yoffset, box[i].w+30, box[i].h+30);
-            
-            ctx.fillStyle = box[i].color;
-            ctx.fillRect(canvas.width/2-box[i].w/2-10+box[i].xoffset,canvas.height/2-box[i].h/2-10+box[i].yoffset, box[i].w+20, box[i].h+20);
-
-            ctx.fillStyle = box[i].hitcolor;
-            ctx.fillRect(canvas.width/2-box[i].w/2-10+box[i].xoffset,canvas.height/2-box[i].h/2-10+box[i].yoffset, box[i].w+20, box[i].h+20);
-            
-            ctx.fillStyle = box[i].color;
-            ctx.fillRect(canvas.width/2-box[i].w/2+box[i].xoffset,canvas.height/2-box[i].h/2+box[i].yoffset, box[i].w, box[i].h);
-            ctx.fillStyle = "rgba(222, 226, 240, 0.98)";
-            ctx.fillRect(canvas.width/2-box[i].w/2+box[i].xoffset,canvas.height/2-box[i].h/2+box[i].yoffset, box[i].w, box[i].h);
-            _blocks(i);
-            if(!box[i].done && run && play >= 0) box[i].time += 1; // in frames
-        }
-        //ball
-        for(var i = 0; i < ball.length; i++){
-        ctx.fillStyle = ball[i].color;
-        ctx.beginPath();
-        ctx.arc(canvas.width/2-ball[i].x+box[ball[i].in_box].xoffset, canvas.height/2-ball[i].y+box[ball[i].in_box].yoffset, ball[i].r, 0, Math.PI*2);
-        ctx.fill();
         }
 
         //mouse
@@ -464,7 +506,6 @@ window.onload = function () {
     }
 
     // Turns any CSS color ("rgb(...)", "hsl(...)", "#abc", "red", ...) into [r, g, b].
-    // The browser does the conversion: give a canvas a color, and reading it back
     // gives "#rrggbb" (or "rgba(r, g, b, a)" if the color is see-through).
     var colorCtx = document.createElement("canvas").getContext("2d");
     function toRGB(color){

@@ -72,9 +72,20 @@ function buildProjectCards() {
         container.appendChild(card);
     });
 }
-// Swaps the title text: the old text slides down and fades out
-// while the new text slides down from the top and fades in (1 second).
+
+/*
+For this, run
+cd ~/Desktop/javascripts
+python3 -m http.server 8081
+
+then open
+http://localhost:8081/
+*/
+
 function changeTitleWithSlide(atitle, newText){
+    //Honestly, I didn't think of making the transition with a GHOST title. I'll keep that in mind next time i need it ;)
+
+
     var duration = 1000;
     var distance = "80px";
 
@@ -129,9 +140,10 @@ function rotateThroughVideos(pic, randomlyselectfrom){
 
         image.style.filter = "opacity(0)";
         
-    }, 9000);
+    }, 11000);
 
 }
+
 function showBackgroundVideos(){
 
     var image = document.createElement("video");
@@ -144,12 +156,13 @@ function showBackgroundVideos(){
     var d_title = document.getElementById("d_title");
     d_title.appendChild(image);
 
-    // [title, video] for every project that has a video, e.g. ["LaTeX 2", "LaTeX 2.mp4"]
+    // [title, video] for every project that has a video, ["LaTeX 2", "LaTeX 2.mp4"]
     let randomlyselectfrom = window.PROJECTS
         .filter(function (project) { return project && project.video; })
         .map(function (project) { return [project.title, project.video]; });
 
     will_pick = randomlyselectfrom[Math.floor(Math.random() * randomlyselectfrom.length)];
+    // wait 5 seconds and THEN show aura
     setTimeout(function(){
         rotateThroughVideos(will_pick, randomlyselectfrom);
 
@@ -157,7 +170,7 @@ function showBackgroundVideos(){
             
             rotateThroughVideos(will_pick, randomlyselectfrom);
 
-        }, 12000);
+        }, 13000);
     }, 5000);
 
 }

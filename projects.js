@@ -68,6 +68,7 @@ window.PROJECTS = [
     entry: "control.html",
     date: "2026-07-17",
     image: "pendulum control.png",
+    video: "pendulum control.mp4",
     tags: ["simulation", "physics"],
     description:
       "A double pendulum attached to a self-driving car. This is a test of using natural selection (or whatever it's called) to get better and better constants. Control thy pendulum, my cars...",
@@ -79,6 +80,7 @@ window.PROJECTS = [
     date: "2026-07-02",
     tags: ["game"],
     image: "findtheconnect4.png",
+    video: "find the connect 4.mp4",
     description:
       "A huge connect-4 game with a win hidden somewhere inside it. A nice little game to play with others.",
   },
