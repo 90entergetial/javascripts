@@ -163,7 +163,7 @@ function showBackgroundVideos(){
         .map(function (project) { return [project.title, project.video]; });
 
     will_pick = randomlyselectfrom[Math.floor(Math.random() * randomlyselectfrom.length)];
-    // wait 5 seconds and THEN show aura
+    // wait 6 seconds and THEN show aura
     setTimeout(function(){
         rotateThroughVideos(will_pick, randomlyselectfrom);
 
@@ -172,7 +172,7 @@ function showBackgroundVideos(){
             rotateThroughVideos(will_pick, randomlyselectfrom);
 
         }, 13000);
-    }, 5000);
+    }, 6000);
 
 }
 

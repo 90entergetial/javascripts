@@ -58,7 +58,8 @@ window.PROJECTS = [
     entry: "acoupleofcircles.html",
     date: "2026-08-25",
     tags: ["simulation", "art"],
-    image: "acoupleofcircles.png",//this image has more data than move of the videos here ;-;
+    image: "acoupleofcircles.png",
+    video: "acoupleofcircles.mp4",
     description:
       "Remade this from my Khan Academy ProcessingJS program. Thousands of little circles paint a white canvas. Looks really nice when you wait long enough.",
   },
