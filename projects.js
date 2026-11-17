@@ -5,8 +5,8 @@ window.PROJECTS = [
     entry: "latex.html",
     date: "2026-11-08",
     tags: ["math", "simulation"],
-    image: "LaTeX 2.png",
-    video: "LaTeX 2.mp4",
+    image: "LaTeX-2.png",
+    video: "LaTeX-2.mp4",
     description:
       "A test of a step-by-step process of putting in a forumla using Reverse Polish Notation using LaTeX.",
   },
@@ -16,8 +16,8 @@ window.PROJECTS = [
     entry: "bounces.html",
     date: "2026-10-28",
     tags: ["simulation", "math"],
-    image: "Efficient Bounces.png",
-    video: "Efficient Bounces.mp4",
+    image: "Efficient-Bounces.png",
+    video: "Efficient-Bounces.mp4",
     description:
       "Influenced by Powertorial. Seeing how far I can mathematically push the computing power of this little game.",
   },
@@ -67,8 +67,8 @@ window.PROJECTS = [
     folder: "pendulum control",
     entry: "control.html",
     date: "2026-07-17",
-    image: "pendulum control.png",
-    video: "pendulum control.mp4",
+    image: "pendulum-control.png",
+    video: "pendulum-control.mp4",
     tags: ["simulation", "physics"],
     description:
       "A double pendulum attached to a self-driving car. This is a test of using natural selection (or whatever it's called) to get better and better constants. Control thy pendulum, my cars...",
@@ -80,7 +80,7 @@ window.PROJECTS = [
     date: "2026-07-02",
     tags: ["game"],
     image: "findtheconnect4.png",
-    video: "find the connect 4.mp4",
+    video: "find-the-connect-4.mp4",
     description:
       "A huge connect-4 game with a win hidden somewhere inside it. A nice little game to play with others.",
   },
@@ -111,7 +111,7 @@ window.PROJECTS = [
     entry: "fishinggame.html",
     date: "2026-05-15",
     tags: ["game", "unfinished"],
-    image: "fishing game.png",
+    image: "fishing-game.png",
     description:
       "A grid fishing game where you have to memorize everything on the board while it translates, rotates, flips around. A very unfinished concept right now.",
   },

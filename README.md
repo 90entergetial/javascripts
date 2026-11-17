@@ -19,3 +19,6 @@ Nov-11/03/2026 - It's looking pretty good RN, just have to make a png AND mp4 fo
 Nov-11/09/2026 - Smoooooth transition for the title and it's background, have an png for all of them and an mp4 for most of them
 
 Nov-11/16/2026 - Slight break (Definetly not just me forgetting)
+- Deployed on vercel... yayyy
+- Hid .node modules, also please keep a note here that i should compress the videos BECAUSE THEY SUM TO 100 MB. JEEZ.
+- Showing how scared I am about spaces, changing spaces to dashes
