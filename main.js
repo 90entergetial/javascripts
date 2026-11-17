@@ -198,7 +198,16 @@ window.onload = function () {
         "Look, Mom! I'm a Title!",
         "I hope you got 8 hours of sleep yesterday..",
         "Laughter Is The Best Medicine..",
-        "I Ionized a Compass Earlier. I Called it Compassion.",];
+        "I Ionized a Compass Earlier. I Called it Compassion.",
+        "Today is " + (new Date()).toDateString() + "!",
+        `Can't You Believe That It's ${(new Date()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}?`,
+        "If Paitence is Key, What's Impatience?",
+        "Cook Cookies, and Bake Bacon.",
+        "Bake Cookies, and Cook Bacon.",
+        "Goodness, A Really, Really, Really, Really, Really, Long Title!",
+        "I Wanna Be The Title.",
+        "You're Reading A Title Right Now!",
+    ];
     var atitle = document.getElementById("title");
     var r = Math.floor(Math.random()*randomtext.length);
 
