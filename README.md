@@ -17,3 +17,5 @@ Nov-11/03/2026 - It's looking pretty good RN, just have to make a png AND mp4 fo
 - Uh oh. The size of the images and videos I use for the previews are starting to make pushing changes take longer when i'm using hotspot.
 
 Nov-11/09/2026 - Smoooooth transition for the title and it's background, have an png for all of them and an mp4 for most of them
+
+Nov-11/16/2026 - Slight break (Definetly not just me forgetting)
