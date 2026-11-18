@@ -32,6 +32,11 @@ evaluations = [
             if(s == 1) return (1/10)
             return ((s-1)*(9)**(s-2))/(10**(s-1));
         },
+        transitions: function(n){
+            var z = n.indexOf("0");
+            if(z == -1) return false;
+            return [{i:z, t:1}];
+        }
     },//0
     {
         name:"One",
@@ -48,6 +53,11 @@ evaluations = [
             if(s == 1) return (1/10)
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
+        transitions: function(n){
+            var z = n.indexOf("1");
+            if(z == -1) return false;
+            return [{i:z, t:1}];
+        }
     },//1
     {
         name:"Two",
@@ -64,6 +74,11 @@ evaluations = [
             if(s == 1) return (1/10)
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
+        transitions: function(n){
+            var z = n.indexOf("2");
+            if(z == -1) return false;
+            return [{i:z, t:1}];
+        }
     },//2
     {
         name:"Three",
@@ -80,6 +95,11 @@ evaluations = [
             if(s == 1) return (1/10)
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
+        transitions: function(n){
+            var z = n.indexOf("3");
+            if(z == -1) return false;
+            return [{i:z, t:1}];
+        }
     },//3
     {
         name:"Four",
@@ -96,6 +116,11 @@ evaluations = [
             if(s == 1) return (1/10)
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
+        transitions: function(n){
+            var z = n.indexOf("4");
+            if(z == -1) return false;
+            return [{i:z, t:1}];
+        }
     },//4
     {
         name:"Five",
@@ -112,6 +137,11 @@ evaluations = [
             if(s == 1) return (1/10)
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
+        transitions: function(n){
+            var z = n.indexOf("5");
+            if(z == -1) return false;
+            return [{i:z, t:1}];
+        }
     },//5
     {
         name:"Six",
@@ -128,6 +158,11 @@ evaluations = [
             if(s == 1) return (1/10)
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
+        transitions: function(n){
+            var z = n.indexOf("6");
+            if(z == -1) return false;
+            return [{i:z, t:1}];
+        }
     },//6
     {
         name:"Seven",
@@ -144,6 +179,11 @@ evaluations = [
             if(s == 1) return (1/10)
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
+        transitions: function(n){
+            var z = n.indexOf("7");
+            if(z == -1) return false;
+            return [{i:z, t:1}];
+        }
     },//7
     {
         name:"Eight",
@@ -160,6 +200,11 @@ evaluations = [
             if(s == 1) return (1/10)
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
+        transitions: function(n){
+            var z = n.indexOf("8");
+            if(z == -1) return false;
+            return [{i:z, t:1}];
+        }
     },//8
     {
         name:"Nine",
@@ -176,6 +221,11 @@ evaluations = [
             if(s == 1) return (1/10)
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
+        transitions: function(n){
+            var z = n.indexOf("9");
+            if(z == -1) return false;
+            return [{i:z, t:1}];
+        }
     },//9
     {
         name:"All At Once",

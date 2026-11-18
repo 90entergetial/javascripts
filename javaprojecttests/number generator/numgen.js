@@ -11,6 +11,7 @@ window.onload = function () {
     let run_next_interation_after = 2000;//usually 2000
     let until_start_eval = 1000;//usually 1000
     let card_speed = 80;//usually 80
+    let card_speed_max = 20;//usually 100
     let card_transition_speed = 500;//usually 500
     let card_transitions = true;//usually true
 
@@ -21,7 +22,7 @@ window.onload = function () {
     // card_transitions = false;//usually true
 
     var number, j=randomBigInt(1000000n), addtoj=0n;
-    j=666666n;
+    j = 11111n;
     number = j;
     var number_in_parts = number.toString().split("");
     var k = document.getElementById("number");
@@ -61,6 +62,39 @@ window.onload = function () {
         cardmaking();
         number_eval();
         updati();
+    }
+
+    function transite(ev, n){
+        //[{i:Number Index, t:Typeof}]
+        /*
+        Typeof:
+        0 = none
+        1 = flash green
+        */
+        if (typeof ev.transitions !== "function") return;
+        try {
+            var transitions = ev.transitions(n);
+            console.log(transitions);
+            for(var i = 0; i < transitions.length; i++){
+                let typef = transitions[i].t;
+                let typei = transitions[i].i;
+                if(typef == 1){
+                    var K = document.getElementById("number").children[typei];
+                    console.log(K);
+                    K.animate(
+                    [
+                        { offset: 0,   transform: "translateY(0px)",  backgroundColor: col.cardbasic,  easing: "ease-out" },
+                        { offset: 0.4, transform: "translateY(-5px)", backgroundColor: col.cardhighlight},
+                        { offset: 0.6, transform: "translateY(-5px)", backgroundColor: col.cardhighlight, easing: "ease-in" },
+                        { offset: 1,   transform: "translateY(0px)",  backgroundColor: col.cardbasic }
+                    ],
+                    { duration: 750, fill: "forwards" }
+                    );
+                }
+            }
+        } catch (err) {
+            console.error("transite failed:", err);
+        }
     }
     function show_succesfull_evals(){
         
@@ -145,7 +179,7 @@ window.onload = function () {
             var add_this = BigInt(Math.round(wonned)*(2**number_in_parts.length));
 
             var raritycolor = "rgb(178, 178, 178)";
-            var divcolor = "rgb(12, 12, 12)";
+            var divcolor = "rgb(38, 38, 38)";
             if(wonned > 20) raritycolor = "rgb(85, 174, 79)", divcolor = "rgb(42, 38, 38)";
             if(wonned > 500) raritycolor = "rgb(31, 94, 194)", divcolor = "rgb(46, 46, 53)";
             if(wonned > 1000) raritycolor = "rgb(251, 255, 0)", divcolor = "rgb(61, 62, 45)";
@@ -187,13 +221,15 @@ window.onload = function () {
                 { duration: card_transition_speed, easing: "ease-out", fill: "forwards" }
                 );
 
+                transite(evali, number_in_parts);
+
             addtoj += add_this;
             j += add_this;
             updati();
             i--;
             }
             if(speed <= 0){
-                speed = (evals.childElementCount/(succesfull_evals.length))*card_speed;
+                speed = Math.max((evals.childElementCount/(succesfull_evals.length))*card_speed,card_speed_max);
             }
             if(speed > 0){
                 speed -= 1;
