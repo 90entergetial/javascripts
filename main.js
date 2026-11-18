@@ -149,7 +149,7 @@ function showBackgroundVideos(){
 
     var image = document.createElement("video");
     image.id = "video";
-    image.src = "images/LaTeX 2.mp4";
+    image.src = "";
     image.autoplay = true;
     image.muted = true;
     image.loop = true;

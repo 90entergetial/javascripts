@@ -24,3 +24,4 @@ Nov-11/16/2026 - Slight break (Definetly not just me forgetting)
 - Showing how scared I am about spaces, changing spaces to dashes
 - Edit: videos are now 33 MB, which is like, somewhat better
 - Better description
+- Add another 10 MB because a couple of circles's video is really really heavy ;-;

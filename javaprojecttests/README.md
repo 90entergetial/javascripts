@@ -17,6 +17,10 @@ fishing game - Extremely unfinished concept of a really cool game idea. You have
 
 is this in the bible - A version of https://bible.lorte.software/ which ACTUALLY has all the words, including "a" and "i". I had to make this beacuse not having the extremely common words that are definetly in the bible bugged me for more than a day.
 
+LaTeX - A test of LaTeX rendering + a test of shortcut conveniences. Maaaybe a cool math game.
+
+LaTeX 2 - A test of a step-by-step process of putting in a forumla using Reverse Polish Notation using LaTeX.
+
 not so randomwalk - Second .html that i've made ever.
 
 pendulum control - Tried to make a double-pendulum-connected-to-a-car, currently only the first pendulum actualy effects the car, the second one has no affecting mass.
