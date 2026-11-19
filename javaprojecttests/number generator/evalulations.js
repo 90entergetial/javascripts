@@ -15,6 +15,108 @@ function isPerfectPower(digits, k){
     return r ** K == x;
 }
 
+// takes a number "lookfor" and the length of the number, and outputs a rarity
+// this was genuinely really complicated so I got claude to do this :p
+// `times` (default 1) = how many separate (non-overlapping) copies of lookfor it needs,
+// e.g. containsRarity("777", 2, length) for 7773777 or 777777
+function containsRarity(lookfor, length, times = 1){
+    var p = lookfor.split("");
+    var m = p.length;
+    if(m == 0 || times <= 0) return 1;
+    if(length < m * times) return 0;
+
+    // fail[i] = length of the longest proper prefix of p[0..i] that is also a suffix of it
+    var fail = [0];
+    for(var i = 1, k = 0; i < m; i++){
+        while(k > 0 && p[i] != p[k]) k = fail[k-1];
+        if(p[i] == p[k]) k++;
+        fail.push(k);
+    }
+    // next[s][d] = how many digits of `lookfor` are matched after reading digit d,
+    // when s digits were matched before
+    var next = [];
+    for(var s = 0; s < m; s++){
+        next.push([]);
+        for(var d = 0; d < 10; d++){
+            var k = s;
+            while(k > 0 && p[k] != String(d)) k = fail[k-1];
+            if(p[k] == String(d)) k++;
+            next[s].push(k);
+        }
+    }
+
+    // state[c][s] = probability of "c copies found so far, and s digits of the next copy matched"
+    // When a copy is completed, matching restarts from 0 so the copies can't overlap
+    // (77777 only counts as one 777, but 777777 counts as two)
+    var empty = function(){
+        var a = [];
+        for(var c = 0; c < times; c++) a.push(new Array(m).fill(0));
+        return a;
+    };
+    var state = empty();
+    var found = 0;
+    // Feeds digit d into state (c, s) with probability `chance`
+    var step = function(into, c, s, d, chance){
+        var t = next[s][d];
+        if(t < m) into[c][t] += chance;
+        else if(c + 1 == times) found += chance;// that was the last copy needed
+        else into[c+1][0] += chance;
+    };
+    // First digit is 1-9 (never 0)
+    for(var d = 1; d <= 9; d++) step(state, 0, 0, d, 1/9);
+    // Every other digit is 0-9
+    for(var i = 1; i < length; i++){
+        var ns = empty();
+        for(var c = 0; c < times; c++){
+            for(var s = 0; s < m; s++){
+                if(state[c][s] == 0) continue;
+                for(var d = 0; d < 10; d++) step(ns, c, s, d, state[c][s] / 10);
+            }
+        }
+        state = ns;
+    }
+    return found;
+}
+
+// Start index of the first `times` separate (non-overlapping) copies of lookfor, or false
+function findCopies(n, lookfor, times){
+    var z = n.join("");
+    var starts = [];
+    var from = 0;
+    while(starts.length < times){
+        var at = z.indexOf(lookfor, from);
+        if(at == -1) return false;
+        starts.push(at);
+        from = at + lookfor.length;
+    }
+    return starts;
+}
+
+// exactEval({name:"Devil", desc:"Includes 6 three times in a row.", lookfor:"666"})
+function exactEval(e){
+    const lookfor = String(e.lookfor);
+    evaluations.push({
+        name: e.name,
+        desc: e.desc,
+        find: function(n){
+            return n.join("").includes(lookfor);
+        },
+        rarity: function(n){
+            return containsRarity(lookfor, n.length);
+        },
+        transitions: function(n){
+            
+            var start = n.join("").indexOf(lookfor);
+            if(start == -1) return false;
+            var Z = [];
+            for(var i = 0; i < lookfor.length; i++){
+                Z.push({i:start+i, t:1});
+            }
+            return Z;
+        }
+    });
+}
+
 function HasZeros() {
     let names = [
         "Zero Gap",//2
@@ -39,41 +141,12 @@ function HasZeros() {
         "ten",
     ]
     for(var i = 0; i < 9; i++){
-        const j = i;
-        const t = "0".repeat(i+2);
-        evaluations.push(
-            {
-                name:`${names[i]}`,
-                desc:`Number contains ${amounts[i]} 0s in a row.`,
-                find: function(n){
-                    var z = n.join("");
-                    if (z.split(t).length - 1 != 0){
-                        return true;
-                    }
-                    return false;
-                },
-                rarity: function(n){
-                    return (1 / (10 ** (j+1)));
-                }, 
-                transitions: function(n){
-                    var z = [];
-                    for(var I = 0; I < n.length; I++){
-                        if(n[I] == "0") z.push(I);
-                        else z = [];
-                        if(z.length == j+2) {
-                            let Z = [];
-                            for(var J = 0; J < z.length; J++){
-                                Z.push({i:z[J], t:1});
-                            }
-                            console.log(Z);
-                            return Z;
-                        }
-                    }
-                    return false;
-                }
-            },//Divisble by 100
-        );
-     }
+        exactEval({
+            name: names[i],
+            desc: `Number contains ${amounts[i]} 0s in a row.`,
+            lookfor: "0".repeat(i+2),
+        });
+    }
 }
 
 evaluations = [
@@ -112,7 +185,7 @@ evaluations = [
         },
         rarity: function(n){
             var s = n.length;
-            if(s == 1) return (1/10)
+            if(s == 1) return (1/9)//a 1-digit number is 1-9
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
         transitions: function(n){
@@ -133,7 +206,7 @@ evaluations = [
         },
         rarity: function(n){
             var s = n.length;
-            if(s == 1) return (1/10)
+            if(s == 1) return (1/9)//a 1-digit number is 1-9
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
         transitions: function(n){
@@ -154,7 +227,7 @@ evaluations = [
         },
         rarity: function(n){
             var s = n.length;
-            if(s == 1) return (1/10)
+            if(s == 1) return (1/9)//a 1-digit number is 1-9
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
         transitions: function(n){
@@ -175,7 +248,7 @@ evaluations = [
         },
         rarity: function(n){
             var s = n.length;
-            if(s == 1) return (1/10)
+            if(s == 1) return (1/9)//a 1-digit number is 1-9
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
         transitions: function(n){
@@ -196,7 +269,7 @@ evaluations = [
         },
         rarity: function(n){
             var s = n.length;
-            if(s == 1) return (1/10)
+            if(s == 1) return (1/9)//a 1-digit number is 1-9
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
         transitions: function(n){
@@ -217,7 +290,7 @@ evaluations = [
         },
         rarity: function(n){
             var s = n.length;
-            if(s == 1) return (1/10)
+            if(s == 1) return (1/9)//a 1-digit number is 1-9
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
         transitions: function(n){
@@ -238,7 +311,7 @@ evaluations = [
         },
         rarity: function(n){
             var s = n.length;
-            if(s == 1) return (1/10)
+            if(s == 1) return (1/9)//a 1-digit number is 1-9
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
         transitions: function(n){
@@ -259,7 +332,7 @@ evaluations = [
         },
         rarity: function(n){
             var s = n.length;
-            if(s == 1) return (1/10)
+            if(s == 1) return (1/9)//a 1-digit number is 1-9
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
         transitions: function(n){
@@ -280,7 +353,7 @@ evaluations = [
         },
         rarity: function(n){
             var s = n.length;
-            if(s == 1) return (1/10)
+            if(s == 1) return (1/9)//a 1-digit number is 1-9
             return ((8*s+1)*((9)**(s-3)))/(10**(s-1));
         },
         transitions: function(n){
@@ -293,6 +366,7 @@ evaluations = [
         name:"Divisble by 10",
         desc:"Number ends with a 0.",
         find: function(n){
+            if(n.length == 1) return false;
             if(n[n.length-1] == '0') return true;
             return false;
         },
@@ -300,15 +374,31 @@ evaluations = [
             return (1 / 10);
         },
         transitions: function(n){
-            return [{i:n.length-1, t:1}];
+            return [{i:n.length-2, t:1},{i:n.length-1, t:1}];
         }
     },//Divisble by 10
+    {
+        name:"DOUBLE JACKPOT",
+        desc:"Includes 777, seperately, twice.",
+        find: function(n){
+            return findCopies(n, "777", 2) != false;
+        },
+        rarity: function(n){
+            return containsRarity("777", n.length, 2);
+        },
+        transitions: function(n){
+            // flash the digits of the first two separate 777s
+            var starts = findCopies(n, "777", 2);
+            if(!starts) return false;
+            var Z = [];
+            for(var c = 0; c < starts.length; c++){
+                for(var i = 0; i < 3; i++) Z.push({i:starts[c]+i, t:1});
+            }
+            return Z;
+        }
+    },//DOUBLE JACKPOT
 
     //conditions  (Palindromes, Primes, includes pairs)
-
-    //ranges (Heavy as a rock, Light as a feather)
-
-    //exceptions (Doesn't include a digit)
 
     {
         name:"All At Once",
@@ -325,7 +415,17 @@ evaluations = [
             var s = n.length;
             return (1/10)**(s-1);
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//All At Once
+
+    //ranges (Heavy as a rock, Light as a feather)
+
+    //exceptions (Doesn't include a digit)
+
     {
         name:"Constant Increase",
         desc:"Every Digit is equal or greater than the previous.",
@@ -344,6 +444,11 @@ evaluations = [
             }
             return count / (9 * 10 ** (n.length - 1));
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//Const Inc
     {
         name:"Constant Decrease",
@@ -364,6 +469,11 @@ evaluations = [
             count -= 1; //remove the all-zeros sequence
             return count / (9 * 10 ** (n.length - 1));
         },
+        transitions: function(n){
+            //whatever sorcery this is but in REVERSE
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:n.length-(x), t:1}));
+        }
     },//Const Dec
     {
         name:"Palindrone",
@@ -377,9 +487,15 @@ evaluations = [
             return true;
         },
         rarity: function(n){
-            
             return  (1/10) ** Math.floor(n.length/2);
         },
+        transitions: function(n){
+            var x = [];
+            for(var i = 0; i < Math.ceil(n.length/2); i++){
+                x.push({i:i, t:1}, {i:(Math.ceil(n.length))-(i+1), t:1});
+            }
+            return x;
+        }
     },//Palindrome
     {
         name:"Pairs",
@@ -396,6 +512,13 @@ evaluations = [
         rarity: function(n){
             return  (1/10) ** Math.floor(n.length/2);
         },
+        transitions: function(n){
+            var x = [];
+            for(var i = 0; i < n.length/2; i++){
+                x.push({i:i, t:1},{i:i+(n.length/2), t:1});
+            }
+            return x;
+        }
     },//Pairs
     {
         name:"Stairs",
@@ -409,8 +532,13 @@ evaluations = [
             return true;
         },
         rarity: function(n){
-            return 1 / 10 ** (n.length - 1);
+            return (1 / 9) * 1 / 10 ** (n.length - 2);
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//Stairs
     {
         name:"Reverse Stairs",
@@ -426,6 +554,11 @@ evaluations = [
         rarity: function(n){
             return 1 / 10 ** (n.length - 1);
         },
+        transitions: function(n){
+            //whatever sorcery this is but in REVERSE
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:n.length-(x), t:1}));
+        }
     },//Reverse Stairs
     {
         name:"Heterogenus",
@@ -449,6 +582,11 @@ evaluations = [
             for(var k = 1; k < n.length; k++) p *= (10 - k) / 10;
             return p;
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//Heterogenus
     {
         name:"Prime",
@@ -456,13 +594,14 @@ evaluations = [
         find: function(n){
             var z = eval(n.join(""));
             if(z == 1) return false;//teehee
-            for(var i = 2; i < Math.sqrt(z)+1; i++){
+            for(var i = 2; i * i <= z; i++){
                 if(z%i == 0){
                     return false;
                 }
             }
             return true;
         },
+        //yeah so there isn't an exact number for when it's a prime lol
         rarity: function(n){
             // Exact count of primes with exactly k digits (k = 1..12)
             const primesWithDigits = [0, 4, 21, 143, 1061, 8363, 68906, 586081, 5096876, 45086079, 404204977, 3663002302, 33489857205];
@@ -471,6 +610,11 @@ evaluations = [
             // Prime number theorem approximation for larger sizes
             return 1 / (Math.LN10 * (size - 1/3));
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//Prime
     {
         name:"One or the Other",
@@ -499,14 +643,19 @@ evaluations = [
         name:"Loop",
         desc:"The first and last digit are the same.",
         find: function(n){
+            if(n.length == 0) return false;
             if(n[0] == n[n.length-1]){
                 return true;
             }
             return false;
         },
         rarity: function(n){
+            if(n.length == 1) return 1;//a single digit is always its own first and last
             return (1/10);
         },
+        transitions: function(n){
+            return [{i:0, t:1},{i:n.length-1, t:1}];
+        }
     },//Loop
     {
         name:"Loop 2",
@@ -521,52 +670,27 @@ evaluations = [
         rarity: function(n){
             return (1/100);
         },
+        transitions: function(n){
+            return [{i:0, t:1},{i:n.length-2, t:1},{i:1, t:1},{i:n.length-1, t:1}];
+        }
     },//Loop 2
     {
-        name:"Devil",
-        desc:"Includes 6 three times in a row.",
+        name:"Mirror",
+        desc:"The first and last two digits are mirrrors.",
         find: function(n){
-            var z = n.join("");
-            if (z.split("666").length - 1 != 0){
+            if(n.length < 3) return false;
+            if(n[0] == n[n.length-1] && n[1] == n[n.length-2]){
                 return true;
             }
             return false;
         },
         rarity: function(n){
-            // Track the probability of ending in zero, one, or two 6s in a row (no "666" yet)
-            // First digit is 1-9, so it is a 6 with probability 1/9
-            var s = [8/9, 1/9, 0], found = 0;
-            for(var i = 1; i < n.length; i++){
-                found += s[2] / 10;// two 6s followed by another 6
-                s = [(s[0] + s[1] + s[2]) * 9/10, s[0] / 10, s[1] / 10];
-            }
-            return found;
+            return (1/100);
         },
-    },//666
-    {
-        name:"Nice",
-        desc:"Includes 69.",
-        find: function(n){
-            var z = n.join("");
-            if (z.split("69").length - 1 != 0){
-                return true;
-            }
-            return false;
-        },
-        rarity: function(n){
-            // Track the probability of the last digit being a 6 or not (no "69" yet)
-            // First digit is 1-9, so it is a 6 with probability 1/9
-            var other = 8/9, six = 1/9, found = 0;
-            for(var i = 1; i < n.length; i++){
-                found += six / 10;// a 6 followed by a 9
-                var newOther = (other * 9 + six * 8) / 10;
-                var newSix = (other + six) / 10;
-                other = newOther;
-                six = newSix;
-            }
-            return found;
-        },
-    },//69
+        transitions: function(n){
+            return [{i:0, t:1},{i:n.length-1, t:1},{i:1, t:1},{i:n.length-2, t:1}];
+        }
+    },//Mirror
     {
         name:"All Even",
         desc:"Every digit is Even.",
@@ -579,6 +703,11 @@ evaluations = [
         rarity: function(n){
             return (4/9) * (1/2) ** (n.length-1);
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//All Even
     {
         name:"All Odd",
@@ -592,6 +721,11 @@ evaluations = [
         rarity: function(n){
             return (5/9) * (1/2) ** (n.length-1);
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//All Odd
     {
         name:"Consistent Steps",
@@ -600,13 +734,18 @@ evaluations = [
             if(n.length <= 2) return false;
             var sep = eval(n[1])-eval(n[0]);
             for(var i = 0; i < n.length-1; i++){
-                if((eval(n[i])+sep)%10 != n[i+1]) return false;
+                if(((eval(n[i])+sep)%10+10)%10 != n[i+1]) return false;//+10 so negative steps wrap around too
             }
             return true;
         },
         rarity: function(n){
             return (1/(10**(n.length-2)))
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//Consistent Steps
     {
         name:"Shuffled Deck",
@@ -628,6 +767,11 @@ evaluations = [
             for(var i = 2; i < n.length; i++) f *= i;
             return (n.length - 1) * f / (9 * Math.pow(10, n.length - 1));
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//Shuffled Deck
     {
         name:"Sorted Deck",
@@ -643,23 +787,15 @@ evaluations = [
             return true;
         },
         rarity: function(n){
-            return 1 / 10 ** (n.length);
+            // first digit must be 1 (1/9), then every next digit is decided (1/10 each)
+            return 1 / (9 * 10 ** (n.length - 1));
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//Sorted Deck
-    {
-        name:"PERFECT DECK",
-        desc:"Inlucdes 1234567890.",
-        find: function(n){
-            var z = n.join("");
-            if (z.split("1234567890").length - 1 != 0){
-                return true;
-            }
-            return false;
-        },
-        rarity: function(n){
-            return 1 / (10 ** 10);
-        },
-    },//PERFECT Deck
     {
         name:"Square",
         desc:"The number is a square of another.",
@@ -672,6 +808,11 @@ evaluations = [
             var count = Math.ceil(10 ** (n.length / 2)) - Math.ceil(10 ** ((n.length - 1) / 2));
             return count / (9 * 10 ** (n.length - 1));
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//Square
     {
         name:"Cubic",
@@ -685,6 +826,11 @@ evaluations = [
             var count = Math.ceil(10 ** (n.length / 3)) - Math.ceil(10 ** ((n.length - 1) / 3));
             return count / (9 * 10 ** (n.length - 1));
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//Cubic
     {
         name:"Quartic",
@@ -697,6 +843,11 @@ evaluations = [
             var count = Math.ceil(10 ** (n.length / power)) - Math.ceil(10 ** ((n.length - 1) / power));
             return count / (9 * 10 ** (n.length - 1));
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//Quartic
     {
         name:"Quintic",
@@ -709,6 +860,11 @@ evaluations = [
             var count = Math.ceil(10 ** (n.length / power)) - Math.ceil(10 ** ((n.length - 1) / power));
             return count / (9 * 10 ** (n.length - 1));
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//Quintic
     {
         name:"Sextic",
@@ -721,6 +877,11 @@ evaluations = [
             var count = Math.ceil(10 ** (n.length / power)) - Math.ceil(10 ** ((n.length - 1) / power));
             return count / (9 * 10 ** (n.length - 1));
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//Sextic
     {
         name:"Heptic",
@@ -733,6 +894,11 @@ evaluations = [
             var count = Math.ceil(10 ** (n.length / power)) - Math.ceil(10 ** ((n.length - 1) / power));
             return count / (9 * 10 ** (n.length - 1));
         },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
     },//Heptic
     {
         name:"Couples",
@@ -746,8 +912,19 @@ evaluations = [
             return true;
         },
         rarity: function(n){
-            return 1 / (9 * 10 ** (Math.floor(n.length/2)-1));
+            // every second digit must match the one before it
+            return 1 / 10 ** (n.length/2);
         },
+        transitions: function(n){
+            var x = [];
+            for(var i = 0; i < n.length/2; i++){
+                x.push({i:i*2, t:1});
+            }
+            for(var i = 0; i < n.length/2; i++){
+                x.push({i:i*2+1, t:1});
+            }
+            return x;
+        }
     },//Couples
     {
         name:"Sister Pairs",
@@ -795,7 +972,31 @@ evaluations = [
             var m = n.length / 2;
             return 0.82 ** (m - 1) - 0.81 ** (m - 1);
         },
+        transitions: function(n){
+            var x = [];
+            for(var i = 0; i < n.length/2; i++){
+                x.push({i:i, t:1},{i:i+(n.length/2), t:1});
+            }
+            return x;
+        }
     },//Sister Pairs
 ]
+
+//exacts
+exactEval({name:"Devil", desc:"Includes 6 three times in a row.", lookfor:"666"});
+exactEval({name:"Nice", desc:"Includes 69.", lookfor:"69"});
+exactEval({name:"PERFECT 1 DECK", desc:"Includes 1234567890.", lookfor:"1234567890"});
+exactEval({name:"PERFECT 0 DECK", desc:"Includes 0123456789.", lookfor:"0123456789"});
+exactEval({name:"PERFECT INVERSE DECK", desc:"Includes 9876543210.", lookfor:"9876543210"});
+exactEval({name:"PI", desc:"Includes 314.", lookfor:"314"});
+exactEval({name:"Extended PI", desc:"Includes 3141.", lookfor:"3141"});
+exactEval({name:"Extended PI 2", desc:"Includes 31415.", lookfor:"31415"});
+exactEval({name:"E", desc:"Includes 271.", lookfor:"271"});
+exactEval({name:"Extended E", desc:"Includes 2718.", lookfor:"2718"});
+exactEval({name:"Extended E 2", desc:"Includes 27182.", lookfor:"27182"});
+exactEval({name:"Jackpot", desc:"Includes 777.", lookfor:"777"});
+exactEval({name:"67", desc:"Includes 67.", lookfor:"67"});
+exactEval({name:"Bond", desc:"Includes 007.", lookfor:"007"});
+exactEval({name:"An A+!", desc:"Includes 100.", lookfor:"100"});
 
 HasZeros();

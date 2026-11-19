@@ -7,13 +7,14 @@ window.onload = function () {
     const ctx = canvas.getContext("2d");
     
 
-
     let run_next_interation_after = 2000;//usually 2000
     let until_start_eval = 1000;//usually 1000
     let card_speed = 80;//usually 80
     let card_speed_max = 60;//usually 100
     let card_transition_speed = 500;//usually 500
     let card_transitions = true;//usually true
+
+    let number_movement = true;//usually true
 
     // run_next_interation_after = 0;//usually 2000
     // until_start_eval = 0;//usually 1000
@@ -22,7 +23,6 @@ window.onload = function () {
     // card_transitions = false;//usually true
 
     var number, j=randomBigInt(1000000n), addtoj=0n;
-    j = 1000000000000n;
     number = j;
     var number_in_parts = number.toString().split("");
     var k = document.getElementById("number");
@@ -70,6 +70,7 @@ window.onload = function () {
             if(r == 10) r = 10 ** 11;
             if(r == 11) r = 10 ** 20;
         }
+        r += 0.01;//just in case it's 99.9999999999
         if(t == "bgcard"){
             if(r < 20) return col.bgcard_common;
             if(r < 45) return col.bgcard_uncommon;
@@ -159,7 +160,7 @@ window.onload = function () {
             k2.append(card);
         }
     }
-    colorprev_cardmaking();
+    //colorprev_cardmaking();
     
     function updati() {
         var I = document.getElementById("i");
@@ -177,7 +178,8 @@ window.onload = function () {
     function reiterate(){
         succesfull_evals = [];
         addtoj = 0n;
-        number = j;
+        //number = j;
+        number=randomBigInt(1000000n);
         number_in_parts = number.toString().split("");
         cardmaking();
         number_eval();
@@ -260,6 +262,8 @@ window.onload = function () {
 
             var raritycolor = "rgb(93, 92, 92)";
             var divcolor = "rgb(12, 12, 12)";
+            raritycolor = rarity_to_color(1/wonned, "eval");
+            divcolor = rarity_to_color(1/wonned, "bgeval");
             /*
             if(wonned > 20) raritycolor = "rgb(85, 174, 79)", divcolor = "rgb(42, 38, 38)";
             if(wonned > 500) raritycolor = "rgb(31, 94, 194)", divcolor = "rgb(46, 46, 53)";
@@ -371,7 +375,7 @@ window.onload = function () {
                 { duration: card_transition_speed, easing: "ease-out", fill: "forwards" }
                 );
 
-                transite(evali, number_in_parts);
+                if(number_movement) transite(evali, number_in_parts);
 
             addtoj += add_this;
             j += add_this;
