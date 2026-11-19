@@ -15,7 +15,69 @@ function isPerfectPower(digits, k){
     return r ** K == x;
 }
 
+function HasZeros() {
+    let names = [
+        "Zero Gap",//2
+        "Zero Hole",//3
+        "Zero Trench",//4
+        "Zero Valley",//5
+        "Zero Canyon",//6
+        "Zero Chasm",//7
+        "Zero Rift",//8
+        "Zero Black Hole",//9
+        "Zero Void",//10
+    ];
+    let amounts = [
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+        "ten",
+    ]
+    for(var i = 0; i < 9; i++){
+        const j = i;
+        const t = "0".repeat(i+2);
+        evaluations.push(
+            {
+                name:`${names[i]}`,
+                desc:`Number contains ${amounts[i]} 0s in a row.`,
+                find: function(n){
+                    var z = n.join("");
+                    if (z.split(t).length - 1 != 0){
+                        return true;
+                    }
+                    return false;
+                },
+                rarity: function(n){
+                    return (1 / (10 ** (j+1)));
+                }, 
+                transitions: function(n){
+                    var z = [];
+                    for(var I = 0; I < n.length; I++){
+                        if(n[I] == "0") z.push(I);
+                        else z = [];
+                        if(z.length == j+2) {
+                            let Z = [];
+                            for(var J = 0; J < z.length; J++){
+                                Z.push({i:z[J], t:1});
+                            }
+                            console.log(Z);
+                            return Z;
+                        }
+                    }
+                    return false;
+                }
+            },//Divisble by 100
+        );
+     }
+}
+
 evaluations = [
+    //exacts (Includes 1 once, Includes 800)
 
     {
         name:"Zero",
@@ -37,7 +99,7 @@ evaluations = [
             if(z == -1) return false;
             return [{i:z, t:1}];
         }
-    },//0
+    },//0 once
     {
         name:"One",
         desc:"One shows up exactly once.",
@@ -58,7 +120,7 @@ evaluations = [
             if(z == -1) return false;
             return [{i:z, t:1}];
         }
-    },//1
+    },//1 once
     {
         name:"Two",
         desc:"Two shows up exactly once.",
@@ -79,7 +141,7 @@ evaluations = [
             if(z == -1) return false;
             return [{i:z, t:1}];
         }
-    },//2
+    },//2 once
     {
         name:"Three",
         desc:"Three shows up exactly once.",
@@ -100,7 +162,7 @@ evaluations = [
             if(z == -1) return false;
             return [{i:z, t:1}];
         }
-    },//3
+    },//3 once
     {
         name:"Four",
         desc:"Four shows up exactly once.",
@@ -121,7 +183,7 @@ evaluations = [
             if(z == -1) return false;
             return [{i:z, t:1}];
         }
-    },//4
+    },//4 once
     {
         name:"Five",
         desc:"Five shows up exactly once.",
@@ -142,7 +204,7 @@ evaluations = [
             if(z == -1) return false;
             return [{i:z, t:1}];
         }
-    },//5
+    },//5 once
     {
         name:"Six",
         desc:"Six shows up exactly once.",
@@ -163,7 +225,7 @@ evaluations = [
             if(z == -1) return false;
             return [{i:z, t:1}];
         }
-    },//6
+    },//6 once
     {
         name:"Seven",
         desc:"Seven shows up exactly once.",
@@ -184,7 +246,7 @@ evaluations = [
             if(z == -1) return false;
             return [{i:z, t:1}];
         }
-    },//7
+    },//7 once
     {
         name:"Eight",
         desc:"Eight shows up exactly once.",
@@ -205,7 +267,7 @@ evaluations = [
             if(z == -1) return false;
             return [{i:z, t:1}];
         }
-    },//8
+    },//8 once
     {
         name:"Nine",
         desc:"Nine shows up exactly once.",
@@ -226,7 +288,28 @@ evaluations = [
             if(z == -1) return false;
             return [{i:z, t:1}];
         }
-    },//9
+    },//9 once
+    {
+        name:"Divisble by 10",
+        desc:"Number ends with a 0.",
+        find: function(n){
+            if(n[n.length-1] == '0') return true;
+            return false;
+        },
+        rarity: function(n){
+            return (1 / 10);
+        },
+        transitions: function(n){
+            return [{i:n.length-1, t:1}];
+        }
+    },//Divisble by 10
+
+    //conditions  (Palindromes, Primes, includes pairs)
+
+    //ranges (Heavy as a rock, Light as a feather)
+
+    //exceptions (Doesn't include a digit)
+
     {
         name:"All At Once",
         desc:"Every Digit is the Same.",
@@ -367,93 +450,6 @@ evaluations = [
             return p;
         },
     },//Heterogenus
-    {
-        name:"Divisble by 10",
-        desc:"Number ends with a 0.",
-        find: function(n){
-            if(n[n.length-1] == '0') return true;
-            return false;
-        },
-        rarity: function(n){
-            return (1 / 10);
-        },
-    },//Divisble by 10
-    {
-        name:"Divisble by 100",
-        desc:"Number ends with two 0s.",
-        find: function(n){
-            if(n.length < 2) return false;
-            if(n[n.length-1] == '0' && n[n.length-2] == '0') return true;
-            return false;
-        },
-        rarity: function(n){
-            return (1 / 100);
-        },
-    },//Divisble by 100
-    {
-        name:"Divisble by 1000",
-        desc:"Number ends with three 0s.",
-        find: function(n){
-            if(n.length < 3) return false;
-            if(n[n.length-1] == '0' && n[n.length-2] == '0' && n[n.length-3] == '0') return true;
-            return false;
-        },
-        rarity: function(n){
-            return (1 / 1000);
-        },
-    },//Divisble by 1000
-    {
-        name:"Divisble by 10000",
-        desc:"Number ends with four 0s.",
-        find: function(n){
-            if(n.length < 4) return false;
-            if(n[n.length-1] == '0' && n[n.length-2] == '0' && n[n.length-3] == '0' && n[n.length-4] == '0') return true;
-            return false;
-        },
-        rarity: function(n){
-            return (1 / 10000);
-        },
-    },//Divisble by 10000
-    {
-        name:"Divisble by 100000",
-        desc:"Number ends with five 0s.",
-        find: function(n){
-            if(n.length < 5) return false;
-            if(n[n.length-1] == '0' && n[n.length-2] == '0' && n[n.length-3] == '0' && n[n.length-4] == '0' && n[n.length-5] == '0') return true;
-            return false;
-        },
-        rarity: function(n){
-            return (1 / 100000);
-        },
-    },//Divisble by 100000
-    {
-        name:"Divisble by 1000000",
-        desc:"Number ends with six 0s.",
-        find: function(n){
-            if(n.length < 6) return false;
-            for(var i = 0; i < 6; i++){
-            if(n[n.length-(i+1)] != '0') return false;
-            }
-            return true;
-        },
-        rarity: function(n){
-            return (1 / 10 ** 6);
-        },
-    },//Divisble by 1000000
-    {
-        name:"Divisble by 10000000",
-        desc:"Number ends with seven 0s.",
-        find: function(n){
-            if(n.length < 7) return false;
-            for(var i = 0; i < 7; i++){
-            if(n[n.length-(i+1)] != '0') return false;
-            }
-            return true;
-        },
-        rarity: function(n){
-            return (1 / 10 ** 7);
-        },
-    },//Divisble by 10000000
     {
         name:"Prime",
         desc:"Number is prime.",
@@ -801,3 +797,5 @@ evaluations = [
         },
     },//Sister Pairs
 ]
+
+HasZeros();
