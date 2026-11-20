@@ -26,7 +26,6 @@ window.onload = function () {
     // card_transitions = false;//usually true
 
     var number, j=randomBigInt(10000000n), addtoj=0n;
-    j=1234567890987654321n;
     number = j;
     var delayed_addtoj = addtoj;
     var delayed_number = number;
@@ -231,8 +230,8 @@ window.onload = function () {
         for(var i = 0; i < succesfull_evals.length; i++){
             V = Math.max(succesfull_evals[i].rarity, V);
         }
-
         var history = document.getElementById("history_list");
+
             var b = document.createElement("div");
             b.className = "history_card";
                 var hnum = document.createElement("div");
@@ -273,12 +272,15 @@ window.onload = function () {
                         B.style.color = rarity_to_color(1/(succesfull_evals[i].rarity), "eval");
                         evals.append(B);
                     }
-
+                    
         b.addEventListener("click", function(e){
             e.stopPropagation();
             openhistorydetail(b);
         });
         history.append(b);
+
+        var CIH = document.getElementById("CIH");
+        CIH.innerHTML = `${addcommas(history.childElementCount)} cards in history`;
     }
 
     function openhistorydetail(card) {

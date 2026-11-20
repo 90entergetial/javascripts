@@ -1210,12 +1210,12 @@ exactEval({name:"Boeing 747", desc:"Includes 747.", lookfor:"747"});
 exactEval({name:"Monosodium Glutamate", desc:"Includes 621.", lookfor:"621"});
 exactEval({name:"Monosodium Glutamate 2", desc:"Includes 3621.", lookfor:"3621"});
 
-exactEval({name:"Three of Threes", desc:"Includes three three times.", lookfor:"333"});
-exactEval({name:"Four of Fours", desc:"Includes four four times.", lookfor:"4444"});
-exactEval({name:"Five of Fives", desc:"Includes five five times.", lookfor:"55555"});
-exactEval({name:"Six of Sixes", desc:"Includes six six times.", lookfor:"666666"});
-exactEval({name:"Seven of Sevens", desc:"Includes seven seven times.", lookfor:"7777777"});
-exactEval({name:"Eight of Eights", desc:"Includes eight eight times.", lookfor:"88888888"});
-exactEval({name:"Nine of Nines", desc:"Includes nine nine times.", lookfor:"999999999"});
+exactEval({name:"Three of Threes", desc:"Includes three three times in a row.", lookfor:"333"});
+exactEval({name:"Four of Fours", desc:"Includes four four times in a row.", lookfor:"4444"});
+exactEval({name:"Five of Fives", desc:"Includes five five times in a row.", lookfor:"55555"});
+exactEval({name:"Six of Sixes", desc:"Includes six six times in a row.", lookfor:"666666"});
+exactEval({name:"Seven of Sevens", desc:"Includes seven seven times in a row.", lookfor:"7777777"});
+exactEval({name:"Eight of Eights", desc:"Includes eight eight times in a row.", lookfor:"88888888"});
+exactEval({name:"Nine of Nines", desc:"Includes nine nine times in a row.", lookfor:"999999999"});
 
 HasZeros();

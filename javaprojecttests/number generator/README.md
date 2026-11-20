@@ -17,3 +17,6 @@ Nov-11/19/2026 - More and MORE COLORS..
 - the evaluations.js is now VERY clean, did need some help for the really complex probabilities ;-;
 - smooth +addtoj and it flashes color by the rarity!!!
 - added a history so you can see your past cards :D This definetly didn't take two hours to make..
+
+Nov-11/20/2026 - MORE evaluations
+- can view every card in full now
