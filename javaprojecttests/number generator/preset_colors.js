@@ -54,6 +54,21 @@ var col = {
     eval_outlier: 'rgb(70, 82, 247)',//yellow
     eval_improbable: 'hsl(102, 100%, 66%)',//pink
     eval_precisionerror: 'rgb(30, 30, 30)',//white
+
+
+    indication_basic: "rgb(38, 38, 38)",
+    indication_common: "rgb(38, 38, 38)",//grey
+    indication_uncommon: 'rgb(53, 147, 72)',//green
+    indication_rare: "rgb(84, 84, 188)",//blue
+    indication_unusual: "rgb(195, 106, 33)",//orange
+    indication_epic: "rgb(170, 57, 178)",//purple
+    indication_mythical: "rgb(36, 125, 125)",//blue-green
+    indication_legendary: 'rgb(169, 70, 17)',//red-orange
+    indication_unbelievable: 'rgb(123, 156, 39)',//yellow-green
+    indication_incredible: 'rgb(174, 34, 34)',//red
+    indication_outlier: 'rgb(216, 189, 33)',//yellow
+    indication_improbable: 'rgb(191, 69, 160)',//pink
+    indication_precisionerror: 'rgb(183, 183, 183)',//white
 }
 
 // grey

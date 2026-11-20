@@ -26,6 +26,7 @@ window.onload = function () {
     // card_transitions = false;//usually true
 
     var number, j=randomBigInt(10000000n), addtoj=0n;
+    j=1111111n;
     number = j;
     var delayed_addtoj = addtoj;
     var delayed_number = number;
@@ -59,6 +60,7 @@ window.onload = function () {
         eval - for the text for evals
         p - to see every color
         rarity - gives the rarity
+        indication - brightest of the rarities
 
         X:
         increment - to preview every color, r turns into the respective rarity
@@ -91,8 +93,8 @@ window.onload = function () {
             if(r == 11) r = 10 ** 20;
         }
         if(X == "compliment"){
-            if(r < ra[0]) r = ra[0] +1;
-            else if(r < ra[1]) r = ra[1] +1;
+            if(r < ra[0]) r = ra[0] -1;
+            else if(r < ra[1]) r = ra[0] +1;
             else if(r < ra[2]) r = ra[0] +1;
             else if(r < ra[3]) r = ra[1] +1;
             else if(r < ra[4]) r = ra[2] +1;
@@ -173,6 +175,20 @@ window.onload = function () {
             if(r < ra[9]) return col.eval_outlier;
             if(r < ra[10]) return col.eval_improbable;
             return col.eval_precisionerror;
+        }
+        if(t == "indication"){
+            if(r < ra[0]) return col.indication_common;
+            if(r < ra[1]) return col.indication_uncommon;
+            if(r < ra[2]) return col.indication_rare;
+            if(r < ra[3]) return col.indication_unusual;
+            if(r < ra[4]) return col.indication_epic;
+            if(r < ra[5]) return col.indication_mythical;
+            if(r < ra[6]) return col.indication_legendary;
+            if(r < ra[7]) return col.indication_unbelievable;
+            if(r < ra[8]) return col.indication_incredible;
+            if(r < ra[9]) return col.indication_outlier;
+            if(r < ra[10]) return col.indication_improbable;
+            return col.indication_precisionerror;
         }
 
     }
@@ -260,7 +276,7 @@ window.onload = function () {
 
                 var B = document.createElement("h1");
                 if(Math.round(V) >= 20) B.style.background = rarity_to_color(1/V, "bgeval");
-                B.innerHTML = `1 in ${addcommas(Math.round(V))}`;
+                B.innerHTML = `1 in ${addcommas(Math.round(V))} * ${rarity_to_color(1/Math.round(V), "rarity").toUpperCase()}`;
                 B.style.color = rarity_to_color(1/V, "eval");
                 evals.append(B);
                     for(var i = 0; i < succesfull_evals.length; i++){
@@ -375,8 +391,29 @@ window.onload = function () {
         }
     });
 
+    var number_bg_to_rarity_rarity = 0;
+    function number_bg_to_rarity(t=-20){
+        if(t != -20) number_bg_to_rarity_rarity = Math.max(t, number_bg_to_rarity_rarity);
+        else number_bg_to_rarity_rarity = 0;
+        let da = rarity_to_color(1/number_bg_to_rarity_rarity, "indication");
+
+        let num = document.getElementById("number");
+        num.animate(
+            [   
+                { offset: 0, easing: "ease-in-out" },
+                {
+                offset: 1,
+                //animating the registered color (see @property --number-color in numgen.html)
+                //smoothly fades both the gradient and the border, which use var(--number-color)
+                "--number-color": da,
+                }
+            ],
+            { duration: 500, fill: "forwards" }
+        );
+    }
     //resets everything
     function reiterate(){
+        number_bg_to_rarity();
         addcurrenttohistory();
         let V = 0;
         for(var i = 0; i < succesfull_evals.length; i++){
@@ -404,18 +441,31 @@ window.onload = function () {
 
     //the transitions depending on what it's given
     //returns how long (ms) until the last number card finishes animating (0 if nothing animates)
-    function transite(ev, n){
+    //Q = true: final pass, every digit plays (not just the ones the eval highlights) and
+    //        ends on the color of the highest rarity reached (number_bg_to_rarity_rarity)
+    //start = ms to wait before this pass begins (included in the returned time)
+    function transite(ev, n, Q=false, start=0){
         //[{i:Number Index, t:Typeof, n:rarity}]
         /*
         Typeof:
         0 = none
         1 = flash n
         2 = flash comp n
+        3 = flash n but don't jump
+        4 = flash comp n but don't jump
         */
         if (typeof ev.transitions !== "function") return 0;
         var total_time = 0;
         try {
             var transitions = ev.transitions(n);
+            if(Q){
+                //include every digit; keep the eval's own type (1/2) for the digits it highlights
+                var all = [];
+                for(var d = 0; d < n.length; d++){
+                    all.push({i: d, t: 3});
+                }
+                transitions = all;
+            }
             //for typef 1
             var typ = [0,0,0,0,0];
             for(var i = 0; i < transitions.length; i++){
@@ -428,6 +478,16 @@ window.onload = function () {
                     if(typef == 2){
                         rarityBGcolor = rarity_to_color(ev.rarity(n), "bgcard", "compliment");
                         raritycolor = rarity_to_color(ev.rarity(n), "card", "compliment");
+                    }
+                    number_bg_to_rarity(1/ev.rarity(n));
+                    let bgV = rarity_to_color(1/number_bg_to_rarity_rarity, "bgcard");
+                    let V = rarity_to_color(1/number_bg_to_rarity_rarity, "card");
+                    if(Q){
+                    bgV = rarity_to_color(1/number_bg_to_rarity_rarity, "bgcard");
+                    V = rarity_to_color(1/number_bg_to_rarity_rarity, "card");
+                    } else {
+                    bgV = col.bgcard_basic;
+                    V = col.card_basic;
                     }
                     setTimeout(function(){
                         K.animate(
@@ -451,16 +511,65 @@ window.onload = function () {
                             {
                                 offset: 1,  
                                 transform: "translateY(0px)",  
-                                backgroundColor: col.bgcard_basic, 
-                                color: col.card_basic,
-                                boxShadow: `0px 0px 10px 0px ${col.bgcard_basic}`
+                                backgroundColor: bgV, 
+                                color: V,
+                                boxShadow: `0px 0px 10px 0px ${bgV}`
                             }
                         ],
                         { duration: number_movement_duration, fill: "forwards" }
                         );
-                    }, typ[typef]*number_movement_offset);
+                    }, start + typ[typef]*number_movement_offset);
                     //this card's animation ends at (its start delay + the animation length)
-                    total_time = Math.max(total_time, typ[typef]*number_movement_offset + number_movement_duration);
+                    total_time = Math.max(total_time, start + typ[typef]*number_movement_offset + number_movement_duration);
+                    typ[typef] += 1;
+                }
+                else if(typef == 3 || typef == 4){
+                    const K = document.getElementById("number").children[typei];
+                    let rarityBGcolor = rarity_to_color(ev.rarity(n), "bgcard");
+                    let raritycolor = rarity_to_color(ev.rarity(n), "card");
+                    if(typef == 4){
+                        rarityBGcolor = rarity_to_color(ev.rarity(n), "bgcard", "compliment");
+                        raritycolor = rarity_to_color(ev.rarity(n), "card", "compliment");
+                    }
+                    number_bg_to_rarity(1/ev.rarity(n));
+                    let bgV = rarity_to_color(1/number_bg_to_rarity_rarity, "bgcard");
+                    let V = rarity_to_color(1/number_bg_to_rarity_rarity, "card");
+                    if(Q){
+                    bgV = rarity_to_color(1/number_bg_to_rarity_rarity, "bgcard");
+                    V = rarity_to_color(1/number_bg_to_rarity_rarity, "card");
+                    } else {
+                    bgV = col.bgcard_basic;
+                    V = col.card_basic;
+                    }
+                    setTimeout(function(){
+                        K.animate(
+                        [
+                            { offset: 0, easing: "ease-out" },
+                            {
+                                offset: 0.4,
+                                backgroundColor: rarityBGcolor,
+                                color: raritycolor,
+                                boxShadow: `0px 0px 10px 0px ${rarityBGcolor}`
+                            },
+                            {
+                                offset: 0.6,
+                                backgroundColor: rarityBGcolor, 
+                                color: raritycolor, 
+                                easing: "ease-in",
+                                boxShadow: `0px 0px 10px 0px ${rarityBGcolor}`
+                            },
+                            {
+                                offset: 1,  
+                                backgroundColor: bgV, 
+                                color: V,
+                                boxShadow: `0px 0px 10px 0px ${bgV}`
+                            }
+                        ],
+                        { duration: number_movement_duration, fill: "forwards" }
+                        );
+                    }, start + typ[typef]*number_movement_offset);
+                    //this card's animation ends at (its start delay + the animation length)
+                    total_time = Math.max(total_time, start + typ[typef]*number_movement_offset + number_movement_duration);
                     typ[typef] += 1;
                 }
             }
@@ -471,6 +580,7 @@ window.onload = function () {
             if(Math.round(1/ev.rarity(n)) >= 20){
             raritycolor = rarity_to_color(ev.rarity(n), "bgcard");
             }
+            number_bg_to_rarity(1/ev.rarity(n));
             F.animate(
                 [
                     { offset: 0, easing: "ease-out" },
@@ -488,7 +598,7 @@ window.onload = function () {
                         color: 'white',
                     }
                 ],
-                { duration: number_movement_duration, fill: "forwards" }
+                { duration: number_movement_duration, delay: start, fill: "forwards" }
             );
             FF.animate(
                 [
@@ -507,7 +617,7 @@ window.onload = function () {
                         color: 'white',
                     }
                 ],
-                { duration: number_movement_duration, fill: "forwards" }
+                { duration: number_movement_duration, delay: start, fill: "forwards" }
             );
         } catch (err) {
             console.error("transite failed:", err);
@@ -642,7 +752,13 @@ window.onload = function () {
                 );
 
                 var number_time = 0;
-                if(number_movement) number_time = transite(evali, number_in_parts);
+                if(number_movement && i != 0) number_time = transite(evali, number_in_parts);
+                if(number_movement && i == 0){
+                    //last card: play its normal pass, then right after it finishes,
+                    //play again over every digit so they all end on the highest rarity color
+                    number_time = transite(evali, number_in_parts);
+                    number_time = transite(evali, number_in_parts, true, number_time);
+                }
 
             addtoj += add_this;
             j += add_this;
@@ -693,6 +809,8 @@ window.onload = function () {
     
     //For the UI button:
     var history_button = document.getElementById("history");
+    var history = document.getElementById("ui_history");
+    history.style.visibility = "hidden";
     history_button.addEventListener("click", function(){
         var history = document.getElementById("ui_history");
         console.log(history);

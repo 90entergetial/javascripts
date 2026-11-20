@@ -27,9 +27,30 @@
         flex-direction: column;
         align-items: center;
     }
+    @property --number-color {
+        syntax: "<color>";
+        inherits: true;
+        initial-value: rgb(38, 38, 38);
+    }
     #number {
         font-size: 40px;
         display: flex;
+        padding: 20px;
+        --number-color: rgb(38, 38, 38);
+        border: solid 2px color-mix(in srgb, var(--number-color) 0%, transparent);
+        border-radius: 10px;
+        position: relative;
+        isolation: isolate;
+    }
+    #number::before {
+        content: "";
+        position: absolute;
+        inset: -120px;          /* how far the glow reaches past the box */
+        background-image: radial-gradient(closest-side,
+            color-mix(in srgb, var(--number-color) 20%, transparent),
+            color-mix(in srgb, var(--number-color) 0%, transparent));
+        z-index: -1;
+        pointer-events: none;  /* so the glow doesn't block clicks */
     }
     #pnumber {
         font-size: 40px;

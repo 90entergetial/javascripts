@@ -627,6 +627,8 @@ evaluations = [
         }
     },//Divisble by 10
 
+    //Triple touble - Inucdes a 3-digits segment twice
+
     //ranges (Heavy as a rock, Light as a feather)
 
     {
@@ -949,7 +951,7 @@ evaluations = [
         },
         transitions: function(n){
             if(n.length == 1) return [{i:0, t:1}];
-            return [{i:0, t:1},{i:n.length-1, t:2}];
+            return [{i:0, t:1},{i:n.length-1, t:1}];
         }
     },//Loop
     {
@@ -967,7 +969,7 @@ evaluations = [
             return (1/100);
         },
         transitions: function(n){
-            return [{i:0, t:1},{i:n.length-2, t:2},{i:1, t:1},{i:n.length-1, t:2}];
+            return [{i:0, t:1},{i:n.length-2, t:1},{i:1, t:1},{i:n.length-1, t:1}];
         }
     },//Loop 2
     {
@@ -1173,8 +1175,23 @@ evaluations = [
             return x;
         }
     },//Sister Pairs
+    // Valley - digits fall to a number then rise back up
+    // Hill - digits rise to a nuber then fall back down
+    // Trench - the two  largest digits are the first and last ones
+    // Plateau - the two smallest digits are the first and last ones
+    // Alternation - Digits alternate between two different digits
+    // It's time - includes a proper timestamp in HHMMSS
+    // It's date (EU) - includes a proper date in DDMMYY
+    // It's date (US) - includes a proper date in MMDDYY
+    // It's a full date (EU) - includes a proper date in DDMMYYYY
+    // It's a full date (US) - includes a proper date in MMDDYYYY
+    // Zigzag - Every digits keeps swapping between increasing and decreasing
+    // Rugged Landscape - Every digits keeps swapping between incraesing and decreasing with flat areas allowed
+    // Rolle's Theorem - The first, last, and one of the middle digits are the same digit.
 
     //exceptions (Doesn't include a digit)
+
+    //All But One - includes every digit at least once except one.
 
 
 ]

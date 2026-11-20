@@ -20,3 +20,5 @@ Nov-11/19/2026 - More and MORE COLORS..
 
 Nov-11/20/2026 - MORE evaluations
 - can view every card in full now
+- apparently you can put variables in CSS!? Insane revelation
+- the AURA now gives the current highest rarity color
