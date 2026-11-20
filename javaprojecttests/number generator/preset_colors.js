@@ -23,7 +23,7 @@ var col = {
     card_legendary: 'rgb(225, 209, 253)',//red-orange
     card_unbelievable: 'rgb(248, 208, 165)',//yellow-green
     card_incredible: 'rgb(254, 254, 254)',//red
-    card_outlier: 'rgb(223, 183, 234)',//yellow
+    card_outlier: 'rgb(56, 94, 231)',//yellow
     card_improbable: 'hsl(102, 100%, 82%)',//pink
     card_precisionerror: 'rgb(30, 30, 30)',//white
 

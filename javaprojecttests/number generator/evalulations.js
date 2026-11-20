@@ -78,6 +78,27 @@ function containsRarity(lookfor, length, times = 1){
     return found;
 }
 
+// Probability that a random number with `length` digits (first digit 1-9, the rest 0-9)
+// has a digit sum that passes `test`, e.g. digitSumRarity(5, sum => sum >= 35)
+// dist[x] = probability that the digits so far add up to x; each new digit spreads it out
+function digitSumRarity(length, test){
+    var dist = [0];
+    for(var d = 1; d <= 9; d++) dist[d] = 1/9;// first digit is 1-9
+    for(var i = 1; i < length; i++){
+        var nd = new Array(dist.length + 9).fill(0);
+        for(var x = 0; x < dist.length; x++){
+            if(dist[x] == 0) continue;
+            for(var d = 0; d <= 9; d++) nd[x + d] += dist[x] / 10;
+        }
+        dist = nd;
+    }
+    var p = 0;
+    for(var x = 0; x < dist.length; x++){
+        if(test(x)) p += dist[x];
+    }
+    return p;
+}
+
 // Start index of the first `times` separate (non-overlapping) copies of lookfor, or false
 function findCopies(n, lookfor, times){
     var z = n.join("");
@@ -98,6 +119,7 @@ function exactEval(e){
     evaluations.push({
         name: e.name,
         desc: e.desc,
+        overlap:true,
         find: function(n){
             return n.join("").includes(lookfor);
         },
@@ -155,6 +177,7 @@ evaluations = [
     {
         name:"Zero",
         desc:"Zero shows up exactly once.",
+        overlap:true,
         find: function(n){
             var z = n.join("");
             if (z.split("0").length - 1 == 1){
@@ -176,6 +199,7 @@ evaluations = [
     {
         name:"One",
         desc:"One shows up exactly once.",
+        overlap:true,
         find: function(n){
             var z = n.join("");
             if (z.split("1").length - 1 == 1){
@@ -197,6 +221,7 @@ evaluations = [
     {
         name:"Two",
         desc:"Two shows up exactly once.",
+        overlap:true,
         find: function(n){
             var z = n.join("");
             if (z.split("2").length - 1 == 1){
@@ -218,6 +243,7 @@ evaluations = [
     {
         name:"Three",
         desc:"Three shows up exactly once.",
+        overlap:true,
         find: function(n){
             var z = n.join("");
             if (z.split("3").length - 1 == 1){
@@ -239,6 +265,7 @@ evaluations = [
     {
         name:"Four",
         desc:"Four shows up exactly once.",
+        overlap:true,
         find: function(n){
             var z = n.join("");
             if (z.split("4").length - 1 == 1){
@@ -260,6 +287,7 @@ evaluations = [
     {
         name:"Five",
         desc:"Five shows up exactly once.",
+        overlap:true,
         find: function(n){
             var z = n.join("");
             if (z.split("5").length - 1 == 1){
@@ -281,6 +309,7 @@ evaluations = [
     {
         name:"Six",
         desc:"Six shows up exactly once.",
+        overlap:true,
         find: function(n){
             var z = n.join("");
             if (z.split("6").length - 1 == 1){
@@ -302,6 +331,7 @@ evaluations = [
     {
         name:"Seven",
         desc:"Seven shows up exactly once.",
+        overlap:true,
         find: function(n){
             var z = n.join("");
             if (z.split("7").length - 1 == 1){
@@ -323,6 +353,7 @@ evaluations = [
     {
         name:"Eight",
         desc:"Eight shows up exactly once.",
+        overlap:true,
         find: function(n){
             var z = n.join("");
             if (z.split("8").length - 1 == 1){
@@ -344,6 +375,7 @@ evaluations = [
     {
         name:"Nine",
         desc:"Nine shows up exactly once.",
+        overlap:true,
         find: function(n){
             var z = n.join("");
             if (z.split("9").length - 1 == 1){
@@ -365,6 +397,7 @@ evaluations = [
     {
         name:"Divisble by 10",
         desc:"Number ends with a 0.",
+        overlap:true,
         find: function(n){
             if(n.length == 1) return false;
             if(n[n.length-1] == '0') return true;
@@ -392,13 +425,209 @@ evaluations = [
             if(!starts) return false;
             var Z = [];
             for(var c = 0; c < starts.length; c++){
+                if(c%2 == 0){
                 for(var i = 0; i < 3; i++) Z.push({i:starts[c]+i, t:1});
+                } else {
+                for(var i = 0; i < 3; i++) Z.push({i:starts[c]+i, t:2});
+                }
             }
             return Z;
         }
     },//DOUBLE JACKPOT
+    {
+        name:"6767",
+        desc:"Includes 67, seperately, twice.",
+        find: function(n){
+            return findCopies(n, "67", 2) != false;
+        },
+        rarity: function(n){
+            return containsRarity("67", n.length, 2);
+        },
+        transitions: function(n){
+            // flash the digits of the first two separate 67s
+            var starts = findCopies(n, "67", 2);
+            if(!starts) return false;
+            var Z = [];
+            for(var c = 0; c < starts.length; c++){
+                for(var i = 0; i < 2; i++) Z.push({i:starts[c]+i, t:1});
+            }
+            return Z;
+        }
+    },//6767
+    {
+        name:"6969",
+        desc:"Includes 69, seperately, twice.",
+        find: function(n){
+            return findCopies(n, "69", 2) != false;
+        },
+        rarity: function(n){
+            return containsRarity("69", n.length, 2);
+        },
+        transitions: function(n){
+            // flash the digits of the first two separate 67s
+            var starts = findCopies(n, "69", 2);
+            if(!starts) return false;
+            var Z = [];
+            for(var c = 0; c < starts.length; c++){
+                for(var i = 0; i < 2; i++) Z.push({i:starts[c]+i, t:1});
+            }
+            return Z;
+        }
+    },//6969
+    {
+        name:"Square",
+        desc:"The number is a square of another.",
+        find: function(n){
+            return isPerfectPower(n.join(""), 2);
+        },
+        rarity: function(n){
+            // Squares m^2 with n digits: 10^(n-1) <= m^2 < 10^n, so m runs from
+            // ceil(10^((n-1)/2)) to ceil(10^(n/2)) - 1
+            var count = Math.ceil(10 ** (n.length / 2)) - Math.ceil(10 ** ((n.length - 1) / 2));
+            return count / (9 * 10 ** (n.length - 1));
+        },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
+    },//Square
+    {
+        name:"Cubic",
+        desc:"The number is a cube of another.",
+        find: function(n){
+            return isPerfectPower(n.join(""), 3);
+        },
+        rarity: function(n){
+            // Cubes m^3 with n digits: 10^(n-1) <= m^3 < 10^n, so m runs from
+            // ceil(10^((n-1)/3)) to ceil(10^(n/3)) - 1
+            var count = Math.ceil(10 ** (n.length / 3)) - Math.ceil(10 ** ((n.length - 1) / 3));
+            return count / (9 * 10 ** (n.length - 1));
+        },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
+    },//Cubic
+    {
+        name:"Quartic",
+        desc:"The number is the 4th power of another.",
+        find: function(n){
+            return isPerfectPower(n.join(""), 4);
+        },
+        rarity: function(n){
+            var power = 4;
+            var count = Math.ceil(10 ** (n.length / power)) - Math.ceil(10 ** ((n.length - 1) / power));
+            return count / (9 * 10 ** (n.length - 1));
+        },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
+    },//Quartic
+    {
+        name:"Quintic",
+        desc:"The number is the 5th power of another.",
+        find: function(n){
+            return isPerfectPower(n.join(""), 5);
+        },
+        rarity: function(n){
+            var power = 5;
+            var count = Math.ceil(10 ** (n.length / power)) - Math.ceil(10 ** ((n.length - 1) / power));
+            return count / (9 * 10 ** (n.length - 1));
+        },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
+    },//Quintic
+    {
+        name:"Sextic",
+        desc:"The number is the 6th power of another.",
+        find: function(n){
+            return isPerfectPower(n.join(""), 6);
+        },
+        rarity: function(n){
+            var power = 6;
+            var count = Math.ceil(10 ** (n.length / power)) - Math.ceil(10 ** ((n.length - 1) / power));
+            return count / (9 * 10 ** (n.length - 1));
+        },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
+    },//Sextic
+    {
+        name:"Heptic",
+        desc:"The number is the 7th power of another.",
+        find: function(n){
+            return isPerfectPower(n.join(""), 7);
+        },
+        rarity: function(n){
+            var power = 7;
+            var count = Math.ceil(10 ** (n.length / power)) - Math.ceil(10 ** ((n.length - 1) / power));
+            return count / (9 * 10 ** (n.length - 1));
+        },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
+    },//Heptic
+    {
+        name:"Prime",
+        desc:"Number is prime.",
+        find: function(n){
+            var z = eval(n.join(""));
+            if(z == 1) return false;//teehee
+            for(var i = 2; i * i <= z; i++){
+                if(z%i == 0){
+                    return false;
+                }
+            }
+            return true;
+        },
+        //yeah so there isn't an exact number for when it's a prime lol
+        rarity: function(n){
+            // Exact count of primes with exactly k digits (k = 1..12)
+            const primesWithDigits = [0, 4, 21, 143, 1061, 8363, 68906, 586081, 5096876, 45086079, 404204977, 3663002302, 33489857205];
+            const size = n.length;
+            if(size < primesWithDigits.length) return primesWithDigits[size] / (9 * Math.pow(10, size - 1));
+            // Prime number theorem approximation for larger sizes
+            return 1 / (Math.LN10 * (size - 1/3));
+        },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
+    },//Prime
+    {
+        name:"Quarter",
+        desc:"Number is divisible by 25.",
+        overlap:true,
+        find: function(n){
+            if(n.length == 1) return false;
+            if(n[n.length-2] == '2' && n[n.length-1] == '5') return true;
+            if(n[n.length-2] == '5' && n[n.length-1] == '0') return true;
+            if(n[n.length-2] == '7' && n[n.length-1] == '5') return true;
+            if(n[n.length-2] == '0' && n[n.length-1] == '0' && n.length != 2) return true;
+            return false;
+        },
+        rarity: function(n){
+            if(n == 2) return (3 / 90);
+            return (4 / 90);
+        },
+        transitions: function(n){
+            return [{i:n.length-2, t:1},{i:n.length-1, t:1}];
+        }
+    },//Divisble by 10
 
-    //conditions  (Palindromes, Primes, includes pairs)
+    //ranges (Heavy as a rock, Light as a feather)
 
     {
         name:"All At Once",
@@ -421,11 +650,86 @@ evaluations = [
             return N.map(x => ({i:x-1, t:1}));
         }
     },//All At Once
-
-    //ranges (Heavy as a rock, Light as a feather)
-
-    //exceptions (Doesn't include a digit)
-
+    {
+        name:"Heavy as a Rock",
+        desc:"All Digits sum to at least 7 times the digit count.",
+        find: function(n){
+            var x = 0;
+            for(var i = 0; i < n.length; i++){
+                x += eval(n[i]);
+            }
+            if(x >= n.length*7) return true;
+            return false;
+        },
+        rarity: function(n){
+            var s = n.length;
+            return digitSumRarity(s, sum => sum >= s*7);
+        },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
+    },//Heavy as a Rock
+    {
+        name:"Light as a Feather",
+        desc:"All Digits sum to at most 3 times the digit count.",
+        find: function(n){
+            var x = 0;
+            for(var i = 0; i < n.length; i++){
+                x += eval(n[i]);
+            }
+            if(x <= n.length*3) return true;
+            return false;
+        },
+        rarity: function(n){
+            var s = n.length;
+            return digitSumRarity(s, sum => sum <= s*3);
+        },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
+    },//Light as a Feather
+    {
+        name:"Heavy Digits",
+        desc:"All Digits are least 6.",
+        find: function(n){
+            for(var i = 0; i < n.length; i++){
+                if(n[i] < 6) return false;
+            }
+            return true;
+        },
+        rarity: function(n){
+            var s = n.length;
+            return (4 / 9) * (4 / 10) ** (s - 1);
+        },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
+    },//Heavy Digits
+    {
+        name:"Light Digits",
+        desc:"All Digits are at most 4.",
+        find: function(n){
+            for(var i = 0; i < n.length; i++){
+                if(n[i] > 4) return false;
+            }
+            return true;
+        },
+        rarity: function(n){
+            var s = n.length;
+            return (4 / 9) * (5 / 10) ** (s - 1);
+        },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
+    },//Light Digits
     {
         name:"Constant Increase",
         desc:"Every Digit is equal or greater than the previous.",
@@ -515,7 +819,7 @@ evaluations = [
         transitions: function(n){
             var x = [];
             for(var i = 0; i < n.length/2; i++){
-                x.push({i:i, t:1},{i:i+(n.length/2), t:1});
+                x.push({i:i, t:1},{i:i+(n.length/2), t:2});
             }
             return x;
         }
@@ -589,34 +893,6 @@ evaluations = [
         }
     },//Heterogenus
     {
-        name:"Prime",
-        desc:"Number is prime.",
-        find: function(n){
-            var z = eval(n.join(""));
-            if(z == 1) return false;//teehee
-            for(var i = 2; i * i <= z; i++){
-                if(z%i == 0){
-                    return false;
-                }
-            }
-            return true;
-        },
-        //yeah so there isn't an exact number for when it's a prime lol
-        rarity: function(n){
-            // Exact count of primes with exactly k digits (k = 1..12)
-            const primesWithDigits = [0, 4, 21, 143, 1061, 8363, 68906, 586081, 5096876, 45086079, 404204977, 3663002302, 33489857205];
-            const size = n.length;
-            if(size < primesWithDigits.length) return primesWithDigits[size] / (9 * Math.pow(10, size - 1));
-            // Prime number theorem approximation for larger sizes
-            return 1 / (Math.LN10 * (size - 1/3));
-        },
-        transitions: function(n){
-            //whatever sorcery this is
-            const N = Array.from({ length: n.length }, (_, i) => i + 1);
-            return N.map(x => ({i:x-1, t:1}));
-        }
-    },//Prime
-    {
         name:"One or the Other",
         desc:"Every Digit is one of two digits.",
         find: function(n){
@@ -638,10 +914,28 @@ evaluations = [
         rarity: function(n){
             return 9 * (Math.pow(2, n.length - 1) - 1) / Math.pow(10, n.length - 1);
         },
+        transitions: function(n){
+            var z = n.join("");
+            var Z = n[0];
+            var Z2;
+            for(var i = 0; i < n.length; i++){
+                if(Z != n[i]){
+                    Z2 = n[i];
+                    break;
+                }
+            }
+            var ta = []
+            for(var i = 0; i < n.length; i++){
+                if(n[i] == Z) ta.push({i:i, t:1});
+                if(n[i] == Z2) ta.push({i:i, t:2});
+            }
+            return ta;
+        }
     },//One or the Other
     {
         name:"Loop",
         desc:"The first and last digit are the same.",
+        overlap:true,
         find: function(n){
             if(n.length == 0) return false;
             if(n[0] == n[n.length-1]){
@@ -654,12 +948,14 @@ evaluations = [
             return (1/10);
         },
         transitions: function(n){
-            return [{i:0, t:1},{i:n.length-1, t:1}];
+            if(n.length == 1) return [{i:0, t:1}];
+            return [{i:0, t:1},{i:n.length-1, t:2}];
         }
     },//Loop
     {
         name:"Loop 2",
         desc:"The first and last two digits are the same.",
+        overlap:true,
         find: function(n){
             if(n.length < 3) return false;
             if(n[0] == n[n.length-2] && n[1] == n[n.length-1]){
@@ -671,12 +967,13 @@ evaluations = [
             return (1/100);
         },
         transitions: function(n){
-            return [{i:0, t:1},{i:n.length-2, t:1},{i:1, t:1},{i:n.length-1, t:1}];
+            return [{i:0, t:1},{i:n.length-2, t:2},{i:1, t:1},{i:n.length-1, t:2}];
         }
     },//Loop 2
     {
         name:"Mirror",
-        desc:"The first and last two digits are mirrrors.",
+        desc:"The first and last two digits are inverses of eachother.",
+        overlap:true,
         find: function(n){
             if(n.length < 3) return false;
             if(n[0] == n[n.length-1] && n[1] == n[n.length-2]){
@@ -688,7 +985,7 @@ evaluations = [
             return (1/100);
         },
         transitions: function(n){
-            return [{i:0, t:1},{i:n.length-1, t:1},{i:1, t:1},{i:n.length-2, t:1}];
+            return [{i:0, t:1},{i:n.length-1, t:2},{i:1, t:1},{i:n.length-2, t:2}];
         }
     },//Mirror
     {
@@ -797,110 +1094,6 @@ evaluations = [
         }
     },//Sorted Deck
     {
-        name:"Square",
-        desc:"The number is a square of another.",
-        find: function(n){
-            return isPerfectPower(n.join(""), 2);
-        },
-        rarity: function(n){
-            // Squares m^2 with n digits: 10^(n-1) <= m^2 < 10^n, so m runs from
-            // ceil(10^((n-1)/2)) to ceil(10^(n/2)) - 1
-            var count = Math.ceil(10 ** (n.length / 2)) - Math.ceil(10 ** ((n.length - 1) / 2));
-            return count / (9 * 10 ** (n.length - 1));
-        },
-        transitions: function(n){
-            //whatever sorcery this is
-            const N = Array.from({ length: n.length }, (_, i) => i + 1);
-            return N.map(x => ({i:x-1, t:1}));
-        }
-    },//Square
-    {
-        name:"Cubic",
-        desc:"The number is a cube of another.",
-        find: function(n){
-            return isPerfectPower(n.join(""), 3);
-        },
-        rarity: function(n){
-            // Cubes m^3 with n digits: 10^(n-1) <= m^3 < 10^n, so m runs from
-            // ceil(10^((n-1)/3)) to ceil(10^(n/3)) - 1
-            var count = Math.ceil(10 ** (n.length / 3)) - Math.ceil(10 ** ((n.length - 1) / 3));
-            return count / (9 * 10 ** (n.length - 1));
-        },
-        transitions: function(n){
-            //whatever sorcery this is
-            const N = Array.from({ length: n.length }, (_, i) => i + 1);
-            return N.map(x => ({i:x-1, t:1}));
-        }
-    },//Cubic
-    {
-        name:"Quartic",
-        desc:"The number is the 4th power of another.",
-        find: function(n){
-            return isPerfectPower(n.join(""), 4);
-        },
-        rarity: function(n){
-            var power = 4;
-            var count = Math.ceil(10 ** (n.length / power)) - Math.ceil(10 ** ((n.length - 1) / power));
-            return count / (9 * 10 ** (n.length - 1));
-        },
-        transitions: function(n){
-            //whatever sorcery this is
-            const N = Array.from({ length: n.length }, (_, i) => i + 1);
-            return N.map(x => ({i:x-1, t:1}));
-        }
-    },//Quartic
-    {
-        name:"Quintic",
-        desc:"The number is the 5th power of another.",
-        find: function(n){
-            return isPerfectPower(n.join(""), 5);
-        },
-        rarity: function(n){
-            var power = 5;
-            var count = Math.ceil(10 ** (n.length / power)) - Math.ceil(10 ** ((n.length - 1) / power));
-            return count / (9 * 10 ** (n.length - 1));
-        },
-        transitions: function(n){
-            //whatever sorcery this is
-            const N = Array.from({ length: n.length }, (_, i) => i + 1);
-            return N.map(x => ({i:x-1, t:1}));
-        }
-    },//Quintic
-    {
-        name:"Sextic",
-        desc:"The number is the 6th power of another.",
-        find: function(n){
-            return isPerfectPower(n.join(""), 6);
-        },
-        rarity: function(n){
-            var power = 6;
-            var count = Math.ceil(10 ** (n.length / power)) - Math.ceil(10 ** ((n.length - 1) / power));
-            return count / (9 * 10 ** (n.length - 1));
-        },
-        transitions: function(n){
-            //whatever sorcery this is
-            const N = Array.from({ length: n.length }, (_, i) => i + 1);
-            return N.map(x => ({i:x-1, t:1}));
-        }
-    },//Sextic
-    {
-        name:"Heptic",
-        desc:"The number is the 7th power of another.",
-        find: function(n){
-            return isPerfectPower(n.join(""), 7);
-        },
-        rarity: function(n){
-            var power = 7;
-            var count = Math.ceil(10 ** (n.length / power)) - Math.ceil(10 ** ((n.length - 1) / power));
-            return count / (9 * 10 ** (n.length - 1));
-        },
-        transitions: function(n){
-            //whatever sorcery this is
-            const N = Array.from({ length: n.length }, (_, i) => i + 1);
-            return N.map(x => ({i:x-1, t:1}));
-        }
-    },//Heptic
-    {
         name:"Couples",
         desc:"Every digit repeats twice.",
         find: function(n){
@@ -917,11 +1110,11 @@ evaluations = [
         },
         transitions: function(n){
             var x = [];
-            for(var i = 0; i < n.length/2; i++){
-                x.push({i:i*2, t:1});
-            }
-            for(var i = 0; i < n.length/2; i++){
-                x.push({i:i*2+1, t:1});
+            for(var i = 0; i < n.length; i++){
+                if(i%4 == 0) x.push({i:i, t:1});
+                else if(i%4 == 1) x.push({i:i, t:1});
+                else if(i%4 == 2) x.push({i:i, t:2});
+                else x.push({i:i, t:2});
             }
             return x;
         }
@@ -975,11 +1168,15 @@ evaluations = [
         transitions: function(n){
             var x = [];
             for(var i = 0; i < n.length/2; i++){
-                x.push({i:i, t:1},{i:i+(n.length/2), t:1});
+                x.push({i:i, t:1},{i:i+(n.length/2), t:2});
             }
             return x;
         }
     },//Sister Pairs
+
+    //exceptions (Doesn't include a digit)
+
+
 ]
 
 //exacts
@@ -996,7 +1193,29 @@ exactEval({name:"Extended E", desc:"Includes 2718.", lookfor:"2718"});
 exactEval({name:"Extended E 2", desc:"Includes 27182.", lookfor:"27182"});
 exactEval({name:"Jackpot", desc:"Includes 777.", lookfor:"777"});
 exactEval({name:"67", desc:"Includes 67.", lookfor:"67"});
+exactEval({name:"1337", desc:"Includes 1337.", lookfor:"1337"});
 exactEval({name:"Bond", desc:"Includes 007.", lookfor:"007"});
 exactEval({name:"An A+!", desc:"Includes 100.", lookfor:"100"});
+exactEval({name:"Not Found", desc:"Includes 404.", lookfor:"404"});
+exactEval({name:"Police", desc:"Includes 911.", lookfor:"911"});
+exactEval({name:"Police (EU)", desc:"Includes 112.", lookfor:"112"});
+exactEval({name:"Police (VIET)", desc:"Includes 113.", lookfor:"113"});
+exactEval({name:"AHHHHHHH", desc:"Includes 800.", lookfor:"800"});
+exactEval({name:"Calculator joke", desc:"Includes 8008.", lookfor:"8008"});
+exactEval({name:"Calculator joke 2", desc:"Includes 80085.", lookfor:"80085"});
+exactEval({name:"Calculator joke 3", desc:"Includes 8008135.", lookfor:"8008135"});
+exactEval({name:"42", desc:"Includes the answer to the universe.", lookfor:"42"});
+exactEval({name:"Boeing 737", desc:"Includes 737.", lookfor:"737"});
+exactEval({name:"Boeing 747", desc:"Includes 747.", lookfor:"747"});
+exactEval({name:"Monosodium Glutamate", desc:"Includes 621.", lookfor:"621"});
+exactEval({name:"Monosodium Glutamate 2", desc:"Includes 3621.", lookfor:"3621"});
+
+exactEval({name:"Three of Threes", desc:"Includes three three times.", lookfor:"333"});
+exactEval({name:"Four of Fours", desc:"Includes four four times.", lookfor:"4444"});
+exactEval({name:"Five of Fives", desc:"Includes five five times.", lookfor:"55555"});
+exactEval({name:"Six of Sixes", desc:"Includes six six times.", lookfor:"666666"});
+exactEval({name:"Seven of Sevens", desc:"Includes seven seven times.", lookfor:"7777777"});
+exactEval({name:"Eight of Eights", desc:"Includes eight eight times.", lookfor:"88888888"});
+exactEval({name:"Nine of Nines", desc:"Includes nine nine times.", lookfor:"999999999"});
 
 HasZeros();

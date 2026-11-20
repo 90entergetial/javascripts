@@ -7,14 +7,17 @@ window.onload = function () {
     const ctx = canvas.getContext("2d");
     
 
-    let run_next_interation_after = 2000;//usually 2000
+    let run_next_interation_after = 3000;//usually 2000
     let until_start_eval = 1000;//usually 1000
-    let card_speed = 80;//usually 80
-    let card_speed_max = 60;//usually 100
+    let card_speed = 1000;//usually 1000, in ms - slowest gap between eval cards (the rarest one, at index 0)
+    let card_speed_max = 450;//usually 450, in ms - fastest gap between eval cards (the most common one, shown first)
     let card_transition_speed = 500;//usually 500
     let card_transitions = true;//usually true
 
     let number_movement = true;//usually true
+    let number_movement_offset = 50;//usually 50, in ms
+    let number_movement_duration = 750;//usually 750, in ms
+    let number_movement_overlap = 150;//usually 150, in ms
 
     // run_next_interation_after = 0;//usually 2000
     // until_start_eval = 0;//usually 1000
@@ -22,20 +25,24 @@ window.onload = function () {
     // card_transition_speed = 0;//usually 500
     // card_transitions = false;//usually true
 
-    var number, j=randomBigInt(1000000n), addtoj=0n;
+    var number, j=randomBigInt(10000000n), addtoj=0n;
+    j=1234567890987654321n;
     number = j;
+    var delayed_addtoj = addtoj;
+    var delayed_number = number;
     var number_in_parts = number.toString().split("");
     var k = document.getElementById("number");
 
     function rarity_to_color(r, t, X=false){
         if(r == false) r = 1;
         r = 1/r;//inverse
+        r = Math.round(r);
         /*
 
         r:
         <20       = common / grey
-        <45       = uncommon / green
-        <100      = rare / blue
+        <50       = uncommon / green
+        <200      = rare / blue
         <500      = unusual / orange
         <10 ** 3  = epic / purple
         <10 ** 4  = mythical / blue-green
@@ -52,11 +59,25 @@ window.onload = function () {
         bgeval - for the background for evals
         eval - for the text for evals
         p - to see every color
+        rarity - gives the rarity
 
         X:
-        true - to preview every color, r turns into the respective rarity
+        increment - to preview every color, r turns into the respective rarity
         */
-        if(X){
+        const ra = [
+            20,
+            50,
+            200,
+            500,
+            10 ** 3,
+            10 ** 4,
+            10 ** 5,
+            10 ** 7,
+            10 ** 9,
+            10 ** 11,
+            10 ** 30
+        ];
+        if(X == "increment"){
             if(r == 0) r = 0;
             if(r == 1) r = 20;
             if(r == 2) r = 45;
@@ -70,61 +91,88 @@ window.onload = function () {
             if(r == 10) r = 10 ** 11;
             if(r == 11) r = 10 ** 20;
         }
-        r += 0.01;//just in case it's 99.9999999999
+        if(X == "compliment"){
+            if(r < ra[0]) r = ra[0] +1;
+            else if(r < ra[1]) r = ra[1] +1;
+            else if(r < ra[2]) r = ra[0] +1;
+            else if(r < ra[3]) r = ra[1] +1;
+            else if(r < ra[4]) r = ra[2] +1;
+            else if(r < ra[5]) r = ra[3] +1;
+            else if(r < ra[6]) r = ra[4] +1;
+            else if(r < ra[7]) r = ra[5] +1;
+            else if(r < ra[8]) r = ra[6] +1;
+            else if(r < ra[9]) r = ra[7] +1;
+            else if(r < ra[10]) r = ra[8] +1;
+            else r = ra[9] + 1;
+        }
+        if(t == "rarity"){
+            if(r < ra[0]) return "common";
+            if(r < ra[1]) return "uncommon";
+            if(r < ra[2]) return "rare";
+            if(r < ra[3]) return "unusual";
+            if(r < ra[4]) return "epic";
+            if(r < ra[5]) return "mythical";
+            if(r < ra[6]) return "legendary";
+            if(r < ra[7]) return "unbelievable";
+            if(r < ra[8]) return "incredible";
+            if(r < ra[9]) return "outlier";
+            if(r < ra[10]) return "improbable";
+            return "precision error";
+        }
         if(t == "bgcard"){
-            if(r < 20) return col.bgcard_common;
-            if(r < 45) return col.bgcard_uncommon;
-            if(r < 100) return col.bgcard_rare;
-            if(r < 500) return col.bgcard_unusual;
-            if(r < 10 ** 3) return col.bgcard_epic;
-            if(r < 10 ** 4) return col.bgcard_mythical;
-            if(r < 10 ** 5) return col.bgcard_legendary;
-            if(r < 10 ** 6) return col.bgcard_unbelievable;
-            if(r < 10 ** 9) return col.bgcard_incredible;
-            if(r < 10 ** 11) return col.bgcard_outlier;
-            if(r < 10 ** 20) return col.bgcard_improbable;
+            if(r < ra[0]) return col.bgcard_common;
+            if(r < ra[1]) return col.bgcard_uncommon;
+            if(r < ra[2]) return col.bgcard_rare;
+            if(r < ra[3]) return col.bgcard_unusual;
+            if(r < ra[4]) return col.bgcard_epic;
+            if(r < ra[5]) return col.bgcard_mythical;
+            if(r < ra[6]) return col.bgcard_legendary;
+            if(r < ra[7]) return col.bgcard_unbelievable;
+            if(r < ra[8]) return col.bgcard_incredible;
+            if(r < ra[9]) return col.bgcard_outlier;
+            if(r < ra[10]) return col.bgcard_improbable;
             return col.bgcard_precisionerror;
         }
         if(t == "card"){
-            if(r < 20) return col.card_common;
-            if(r < 45) return col.card_uncommon;
-            if(r < 100) return col.card_rare;
-            if(r < 500) return col.card_unusual;
-            if(r < 10 ** 3) return col.card_epic;
-            if(r < 10 ** 4) return col.card_mythical;
-            if(r < 10 ** 5) return col.card_legendary;
-            if(r < 10 ** 6) return col.card_unbelievable;
-            if(r < 10 ** 9) return col.card_incredible;
-            if(r < 10 ** 11) return col.card_outlier;
-            if(r < 10 ** 20) return col.card_improbable;
+            if(r < ra[0]) return col.card_common;
+            if(r < ra[1]) return col.card_uncommon;
+            if(r < ra[2]) return col.card_rare;
+            if(r < ra[3]) return col.card_unusual;
+            if(r < ra[4]) return col.card_epic;
+            if(r < ra[5]) return col.card_mythical;
+            if(r < ra[6]) return col.card_legendary;
+            if(r < ra[7]) return col.card_unbelievable;
+            if(r < ra[8]) return col.card_incredible;
+            if(r < ra[9]) return col.card_outlier;
+            if(r < ra[10]) return col.card_improbable;
             return col.card_precisionerror;
         }
         if(t == "bgeval"){
-            if(r < 20) return col.bgeval_common;
-            if(r < 45) return col.bgeval_uncommon;
-            if(r < 100) return col.bgeval_rare;
-            if(r < 500) return col.bgeval_unusual;
-            if(r < 10 ** 3) return col.bgeval_epic;
-            if(r < 10 ** 4) return col.bgeval_mythical;
-            if(r < 10 ** 5) return col.bgeval_legendary;
-            if(r < 10 ** 6) return col.bgeval_unbelievable;
-            if(r < 10 ** 9) return col.bgeval_incredible;
-            if(r < 10 ** 11) return col.bgeval_outlier;
-            if(r < 10 ** 20) return col.bgeval_improbable;
+            if(r < ra[0]) return col.bgeval_common;
+            if(r < ra[1]) return col.bgeval_uncommon;
+            if(r < ra[2]) return col.bgeval_rare;
+            if(r < ra[3]) return col.bgeval_unusual;
+            if(r < ra[4]) return col.bgeval_epic;
+            if(r < ra[5]) return col.bgeval_mythical;
+            if(r < ra[6]) return col.bgeval_legendary;
+            if(r < ra[7]) return col.bgeval_unbelievable;
+            if(r < ra[8]) return col.bgeval_incredible;
+            if(r < ra[9]) return col.bgeval_outlier;
+            if(r < ra[10]) return col.bgeval_improbable;
             return col.bgeval_precisionerror;
         }
         if(t == "eval"){
-            if(r < 20) return col.eval_common;
-            if(r < 45) return col.eval_uncommon;
-            if(r < 100) return col.eval_rare;
-            if(r < 500) return col.eval_unusual;
-            if(r < 10 ** 3) return col.eval_epic;
-            if(r < 10 ** 4) return col.eval_mythical;
-            if(r < 10 ** 5) return col.eval_legendary;
-            if(r < 10 ** 6) return col.eval_unbelievable;
-            if(r < 10 ** 9) return col.eval_incredible;
-            if(r < 10 ** 11) return col.eval_outlier;
-            if(r < 10 ** 20) return col.eval_improbable;
+            if(r < ra[0]) return col.eval_common;
+            if(r < ra[1]) return col.eval_uncommon;
+            if(r < ra[2]) return col.eval_rare;
+            if(r < ra[3]) return col.eval_unusual;
+            if(r < ra[4]) return col.eval_epic;
+            if(r < ra[5]) return col.eval_mythical;
+            if(r < ra[6]) return col.eval_legendary;
+            if(r < ra[7]) return col.eval_unbelievable;
+            if(r < ra[8]) return col.eval_incredible;
+            if(r < ra[9]) return col.eval_outlier;
+            if(r < ra[10]) return col.eval_improbable;
             return col.eval_precisionerror;
         }
 
@@ -154,9 +202,9 @@ window.onload = function () {
             p.innerHTML = Math.floor(Math.random()*10);
             card.append(p);
             card.id = "card";
-            card.style.backgroundColor = rarity_to_color(1/elementcount, "bgeval", true);
-            card.style.color = rarity_to_color(1/elementcount, "eval", true);
-            card.style.boxShadow = `0px 0px 10px 0px ${rarity_to_color(1/elementcount, "bgeval", true)}`
+            card.style.backgroundColor = rarity_to_color(1/elementcount, "bgeval", "increment");
+            card.style.color = rarity_to_color(1/elementcount, "eval", "increment");
+            card.style.boxShadow = `0px 0px 10px 0px ${rarity_to_color(1/elementcount, "bgeval", "increment")}`
             k2.append(card);
         }
     }
@@ -164,22 +212,188 @@ window.onload = function () {
     
     function updati() {
         var I = document.getElementById("i");
-        I.innerHTML = j;
+        I.innerHTML = addcommas(delayed_number);
         if(addtoj != 0){
             let II = document.getElementById("ii");
-            II.innerHTML = `+${addtoj}`;
+            II.innerHTML = `+${addcommas(delayed_addtoj)}`;
         } else {
             let II = document.getElementById("ii");
             II.innerHTML = `...`;
         }
     }
     updati();
+
     var succesfull_evals = [];
+    function addcurrenttohistory() {
+
+
+        let V = 1;
+        for(var i = 0; i < succesfull_evals.length; i++){
+            V = Math.max(succesfull_evals[i].rarity, V);
+        }
+
+        var history = document.getElementById("history_list");
+            var b = document.createElement("div");
+            b.className = "history_card";
+                var hnum = document.createElement("div");
+                hnum.className = "h_num";
+                    for(var i = 0; i < number_in_parts.length; i++){
+                        var B = document.createElement("div");
+                        B.className = "h_card";
+                        B.style.boxShadow = "0px 0px 10px 0px rgb(33, 32, 31)";
+                        B.style.backgroundColor = rarity_to_color(1/V, "bgcard");
+                        if(Math.round(V) < 20) B.style.backgroundColor = "rgb(38, 38, 38)";
+                        B.style.color = rarity_to_color(1/V, "card");
+                            var B_h = document.createElement("h1");
+                            B_h.innerHTML = number_in_parts[i];
+                            B_h.style.fontWeight = "bold";
+                            B.append(B_h);
+                        hnum.append(B);
+                    }
+                b.append(hnum);
+                var B = document.createElement("div");
+                B.className = "divider";
+                b.append(B);
+
+                var evals = document.createElement("div");
+                evals.className = "h_evals";
+                b.append(evals);
+
+                var B = document.createElement("h1");
+                if(Math.round(V) >= 20) B.style.background = rarity_to_color(1/V, "bgeval");
+                B.innerHTML = `1 in ${addcommas(Math.round(V))}`;
+                B.style.color = rarity_to_color(1/V, "eval");
+                evals.append(B);
+                    for(var i = 0; i < succesfull_evals.length; i++){
+                        const this_eval = evaluations[succesfull_evals[i].id];
+                        var B = document.createElement("h1");
+                        B.style.fontSize = `15px`;
+                        B.innerHTML = `1 in ${addcommas(Math.round(succesfull_evals[i].rarity))} - ${this_eval.name} - ${this_eval.desc}`;
+                        if(Math.round(succesfull_evals[i].rarity) >= 20) B.style.background = rarity_to_color(1/(succesfull_evals[i].rarity), "bgeval");
+                        B.style.color = rarity_to_color(1/(succesfull_evals[i].rarity), "eval");
+                        evals.append(B);
+                    }
+
+        b.addEventListener("click", function(e){
+            e.stopPropagation();
+            openhistorydetail(b);
+        });
+        history.append(b);
+    }
+
+    function openhistorydetail(card) {
+        var detail = document.getElementById("ui_history_detail");
+        var list = document.getElementById("history_detail_list");
+        var copy = card.cloneNode(true);
+        copy.classList.add("expanded");
+        list.replaceChildren(copy);
+        detail.style.display = "flex";
+    }
+
+    function closehistorydetail() {
+        document.getElementById("ui_history_detail").style.display = "none";
+    }
+
+    // --- resizing ui_history / ui_history_detail by dragging their edges ---
+    const RESIZE_EDGE = 12; // how close (px) to the edge the pointer has to be
+    const MIN_BOX = 300;
+    var resizing = null; // info about the drag in progress, or null
+    var justresized = false; // swallows the click that fires at the end of a drag
+
+    // really big and complex resizing of the UI.. jeez
+    function resizeedges(box, e) {
+        var r = box.getBoundingClientRect();
+        var x = 0, y = 0;
+        if(e.clientX - r.left < RESIZE_EDGE) x = -1;
+        else if(r.right - e.clientX < RESIZE_EDGE) x = 1;
+        if(e.clientY - r.top < RESIZE_EDGE) y = -1;
+        else if(r.bottom - e.clientY < RESIZE_EDGE) y = 1;
+        return {x: x, y: y};
+    }
+    function resizecursor(edges) {
+        if(edges.x == 0 && edges.y == 0) return "";
+        if(edges.x == 0) return "ns-resize";
+        if(edges.y == 0) return "ew-resize";
+        return edges.x == edges.y ? "nwse-resize" : "nesw-resize";
+    }
+    function clampsize(w, h) {
+        return {
+            w: Math.min(Math.max(w, MIN_BOX), window.innerWidth * 0.9),
+            h: Math.min(Math.max(h, MIN_BOX), window.innerHeight * 0.9)
+        };
+    }
+    function setboxsize(w, h) {
+        var s = clampsize(w, h);
+        document.documentElement.style.setProperty("--history-w", s.w + "px");
+        document.documentElement.style.setProperty("--history-h", s.h + "px");
+    }
+    //TBH i've never heard of a .forEach() before
+    ["ui_history", "ui_history_detail"].forEach(function(id){
+        var box = document.getElementById(id);
+        box.addEventListener("pointermove", function(e){
+            if(!resizing) box.style.cursor = resizecursor(resizeedges(box, e));
+        });
+        box.addEventListener("pointerdown", function(e){
+            var edges = resizeedges(box, e);
+            if(edges.x == 0 && edges.y == 0) return;
+            e.preventDefault(); // no text selection while dragging
+            var r = box.getBoundingClientRect();
+            resizing = {
+                edges: edges,
+                startX: e.clientX,
+                startY: e.clientY,
+                startW: r.width,
+                startH: r.height
+            };
+            document.body.style.cursor = resizecursor(edges);
+        });
+    });
+
+    //for the UI boxes:
+    window.addEventListener("pointermove", function(e){
+        if(!resizing) return;
+        // the box stays centered, so it grows on both sides:
+        // double the movement so the dragged edge stays under the pointer
+        var w = resizing.startW + 2 * resizing.edges.x * (e.clientX - resizing.startX);
+        var h = resizing.startH + 2 * resizing.edges.y * (e.clientY - resizing.startY);
+        setboxsize(w, h);
+    });
+    window.addEventListener("pointerup", function(){
+        if(!resizing) return;
+        resizing = null;
+        document.body.style.cursor = "";
+        justresized = true;
+        setTimeout(function(){ justresized = false; }, 0);
+    });
+    document.addEventListener("click", function(e){
+        if(justresized) return; // ending a drag isn't a click outside
+        var detail = document.getElementById("ui_history_detail");
+        if(detail && detail.style.display == "flex" && !detail.contains(e.target)){
+            closehistorydetail();
+        }
+    });
+
+    //resets everything
     function reiterate(){
+        addcurrenttohistory();
+        let V = 0;
+        for(var i = 0; i < succesfull_evals.length; i++){
+            V += succesfull_evals[i].rarity;
+        }
+        console.log("Number: " + number + " | (+" + addcommas(addtoj) + ") | " + succesfull_evals.length + " successfull evals | 1 in " + addcommas(Math.round(V)));
+        console.log("-----");
+        for(var i = 0; i < succesfull_evals.length; i++){
+        console.log(evaluations[succesfull_evals[i].id].name + " - " + evaluations[succesfull_evals[i].id].desc + " - 1 in " + addcommas(Math.round(succesfull_evals[i].rarity)));
+        }
+        console.log("-----");
         succesfull_evals = [];
+        evals = document.getElementById("evals");
+        evals.replaceChildren();
         addtoj = 0n;
+        delayed_addtoj = addtoj;
+        delayed_number = j;
         //number = j;
-        number=randomBigInt(1000000n);
+        number=randomBigInt(100000000n);
         number_in_parts = number.toString().split("");
         cardmaking();
         number_eval();
@@ -187,24 +401,32 @@ window.onload = function () {
     }
 
     //the transitions depending on what it's given
+    //returns how long (ms) until the last number card finishes animating (0 if nothing animates)
     function transite(ev, n){
         //[{i:Number Index, t:Typeof, n:rarity}]
         /*
         Typeof:
         0 = none
         1 = flash n
+        2 = flash comp n
         */
-        if (typeof ev.transitions !== "function") return;
+        if (typeof ev.transitions !== "function") return 0;
+        var total_time = 0;
         try {
             var transitions = ev.transitions(n);
-            console.log(transitions);
+            //for typef 1
+            var typ = [0,0,0,0,0];
             for(var i = 0; i < transitions.length; i++){
                 const typef = transitions[i].t;
                 const typei = transitions[i].i;
-                if(typef == 1){
+                if(typef == 1 || typef == 2){
                     const K = document.getElementById("number").children[typei];
-                    const rarityBGcolor = rarity_to_color(ev.rarity(n), "bgcard");
-                    const raritycolor = rarity_to_color(ev.rarity(n), "card");
+                    let rarityBGcolor = rarity_to_color(ev.rarity(n), "bgcard");
+                    let raritycolor = rarity_to_color(ev.rarity(n), "card");
+                    if(typef == 2){
+                        rarityBGcolor = rarity_to_color(ev.rarity(n), "bgcard", "compliment");
+                        raritycolor = rarity_to_color(ev.rarity(n), "card", "compliment");
+                    }
                     setTimeout(function(){
                         K.animate(
                         [
@@ -232,14 +454,63 @@ window.onload = function () {
                                 boxShadow: `0px 0px 10px 0px ${col.bgcard_basic}`
                             }
                         ],
-                        { duration: 750, fill: "forwards" }
+                        { duration: number_movement_duration, fill: "forwards" }
                         );
-                    }, i*50);
+                    }, typ[typef]*number_movement_offset);
+                    //this card's animation ends at (its start delay + the animation length)
+                    total_time = Math.max(total_time, typ[typef]*number_movement_offset + number_movement_duration);
+                    typ[typef] += 1;
                 }
             }
+            
+            const F = document.getElementById("i");
+            const FF = document.getElementById("ii");
+            let raritycolor = 'white';
+            if(Math.round(1/ev.rarity(n)) >= 20){
+            raritycolor = rarity_to_color(ev.rarity(n), "bgcard");
+            }
+            F.animate(
+                [
+                    { offset: 0, easing: "ease-out" },
+                    {
+                        offset: 0.4,
+                        color: raritycolor,
+                    },
+                    {
+                        offset: 0.6,
+                        color: raritycolor, 
+                        easing: "ease-in",
+                    },
+                    {
+                        offset: 1,  
+                        color: 'white',
+                    }
+                ],
+                { duration: number_movement_duration, fill: "forwards" }
+            );
+            FF.animate(
+                [
+                    { offset: 0, easing: "ease-out" },
+                    {
+                        offset: 0.4,
+                        color: raritycolor,
+                    },
+                    {
+                        offset: 0.6,
+                        color: raritycolor, 
+                        easing: "ease-in",
+                    },
+                    {
+                        offset: 1,  
+                        color: 'white',
+                    }
+                ],
+                { duration: number_movement_duration, fill: "forwards" }
+            );
         } catch (err) {
             console.error("transite failed:", err);
         }
+        return total_time;
     }
     //displaying the evaluations
     function show_succesfull_evals(){
@@ -289,7 +560,7 @@ window.onload = function () {
                     s1.append(c);
                 evlcrd.append(s1);
                     var c = document.createElement("div");
-                    c.innerHTML = `1 in ${addcommas(BigInt(Math.round(wonned)))}`;
+                    c.innerHTML = `${rarity_to_color(1/wonned, "rarity")} * 1 in ${addcommas(BigInt(Math.round(wonned)))}`;
                         c.style.color = raritycolor;
                     c.id = "prob"
                 evlcrd.append(c);
@@ -313,16 +584,9 @@ window.onload = function () {
         }
         setTimeout(function(){reiterate();},run_next_interation_after);
         } else {
-        //show one by one
-        var i = succesfull_evals.length-1;
-        var speed = 10;
-        var timer = setInterval(function(){
-            if(i < 0){
-                clearInterval(timer);
-                setTimeout(function(){reiterate();},run_next_interation_after);
-                return;
-            }
-            if(i >= 0 && speed <= 0){
+        //show one by one, from the last (most common) to index 0 (rarest), each one stacked on top
+        //of the last. Each card waits for the one before it with a setTimeout chain.
+        function show_next(i){
             var evali = evaluations[succesfull_evals[i].id];
             var wonned = succesfull_evals[i].rarity;
 
@@ -357,7 +621,7 @@ window.onload = function () {
                     s1.append(c);
                 evlcrd.append(s1);
                     var c = document.createElement("div");
-                    c.innerHTML = `1 in ${addcommas(BigInt(Math.round(wonned)))}`;
+                    c.innerHTML = `${rarity_to_color(1/wonned, "rarity").toUpperCase()} * 1 in ${addcommas(BigInt(Math.round(wonned)))}`;
                         c.style.color = raritycolor;
                     c.id = "prob"
                 evlcrd.append(c);
@@ -375,20 +639,37 @@ window.onload = function () {
                 { duration: card_transition_speed, easing: "ease-out", fill: "forwards" }
                 );
 
-                if(number_movement) transite(evali, number_in_parts);
+                var number_time = 0;
+                if(number_movement) number_time = transite(evali, number_in_parts);
 
             addtoj += add_this;
             j += add_this;
             updati();
-            i--;
+
+            //last card shown: wait for its number animations (if longer) before the next number
+            if(i == 0){
+                setTimeout(function(){reiterate();}, Math.max(run_next_interation_after, number_time));
+                return;
             }
-            if(speed <= 0){
-                speed = Math.max((evals.childElementCount/(succesfull_evals.length))*card_speed,card_speed_max);
+
+            //Gap before the next card: card_speed_max ms for the card farthest from 0,
+            //sliding evenly up to card_speed ms for index 0
+            var far = i / (succesfull_evals.length - 1);//1 = farthest from 0, 0 = at 0
+            var delay = card_speed + (card_speed_max - card_speed) * far;
+
+            //Unless the eval says it can overlap, wait until its number cards are done animating
+            //(minus number_movement_overlap, so the next one starts a little early)
+            if(!evali.overlap && number_time > 0){
+                delay = Math.max(delay, number_time - number_movement_overlap);
             }
-            if(speed > 0){
-                speed -= 1;
-            }
-        }, 10);
+
+            setTimeout(function(){show_next(i - 1);}, delay);
+        }
+        if(succesfull_evals.length == 0){
+            setTimeout(function(){reiterate();}, run_next_interation_after);
+        } else {
+            show_next(succesfull_evals.length - 1);
+        }
         }
 
     }
@@ -407,7 +688,18 @@ window.onload = function () {
         }, until_start_eval);
     }
     number_eval();
-
+    
+    //For the UI button:
+    var history_button = document.getElementById("history");
+    history_button.addEventListener("click", function(){
+        var history = document.getElementById("ui_history");
+        console.log(history);
+        if(history.style.visibility == "hidden") history.style.visibility = "visible";
+        else {
+            history.style.visibility = "hidden";
+            closehistorydetail();
+        }
+    })
     // setInterval(function(){
     //     succesfull_evals = [];
     //     addtoj = 0n;
@@ -452,7 +744,21 @@ window.onload = function () {
     function update() {
         if(window.innerWidth != canvas.width) canvas.width = window.innerWidth;
         if(window.innerHeight != canvas.height) canvas.height = window.innerHeight;
-
+        if(delayed_addtoj != addtoj){
+            delayed_addtoj -= addtoj;
+            delayed_addtoj *= 8000n;
+            delayed_addtoj /= 10000n;
+            delayed_addtoj += addtoj;
+            updati();
+        }
+        if(delayed_number != j){
+            delayed_number -= j;
+            delayed_number *= 8000n;
+            delayed_number /= 10000n;
+            delayed_number += j;
+            updati();
+        }
+        
 
         requestAnimationFrame(update);
     }
