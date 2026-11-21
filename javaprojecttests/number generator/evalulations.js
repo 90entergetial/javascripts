@@ -99,6 +99,34 @@ function digitSumRarity(length, test){
     return p;
 }
 
+// Probability that a random number with `length` digits (first digit 1-9) passes shapeFind()
+// state[d][phase] = probability the last digit is d and the shape is in that phase
+function shapeRarity(length, valley){
+    if(length < 3) return 0;
+    var state = [];
+    for(var d = 0; d <= 9; d++) state.push([d == 0 ? 0 : 1/9, 0, 0]);// first digit is 1-9
+    for(var i = 1; i < length; i++){
+        var ns = [];
+        for(var d = 0; d <= 9; d++) ns.push([0, 0, 0]);
+        for(var d = 0; d <= 9; d++){
+            for(var e = 0; e <= 9; e++){
+                var step = valley ? e - d : d - e;
+                for(var ph = 0; ph < 3; ph++){
+                    var pr = state[d][ph] / 10;
+                    if(pr == 0) continue;
+                    if(step == 0) ns[e][ph] += pr;// same digit: phase doesn't change
+                    else if(step < 0){ if(ph != 2) ns[e][1] += pr; }// moving away
+                    else { if(ph != 0) ns[e][2] += pr; }// moving back
+                }
+            }
+        }
+        state = ns;
+    }
+    var total = 0;
+    for(var d = 0; d <= 9; d++) total += state[d][2];
+    return total;
+}
+
 // Start index of the first `times` separate (non-overlapping) copies of lookfor, or false
 function findCopies(n, lookfor, times){
     var z = n.join("");
@@ -1175,11 +1203,154 @@ evaluations = [
             return x;
         }
     },//Sister Pairs
-    // Valley - digits fall to a number then rise back up
-    // Hill - digits rise to a nuber then fall back down
-    // Trench - the two  largest digits are the first and last ones
-    // Plateau - the two smallest digits are the first and last ones
+
+    {
+        name:"Valley",
+        desc:"Digits fall to a number then rise back up.",
+        find: function(n){
+            var phase = 0;
+            for(var i = 0; i < n.length-1; i++){
+                var step = n[i+1] - n[i];
+                if(step < 0){// moving away (down for Valley)
+                    if(phase == 2) return false;// dropped again after rising
+                    phase = Math.max(phase, 1);
+                } else if(step > 0){// moving back (up for Valley)
+                    if(phase == 0) return false;// rose before any real drop
+                    phase = 2;
+                }
+            }
+            return phase == 2;
+        },
+        rarity: function(n){
+            return shapeRarity(n.length, true);
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            let small = 1000;
+            let s_i = 0;
+            for(var i = 0; i < n.length; i++){
+                if(small != Math.min(small, n[i])){
+                    s_i = i;
+                    small = Math.min(small, n[i]);
+                }
+            }
+            R.push({i:s_i, t:1});
+            for(var i = s_i+1; i < n.length; i++){
+                R.push({i:i, t:4});
+            }
+            for(var i = s_i-1; i >= 0; i--){
+                R.push({i:i, t:4});
+            }
+            return R;
+        }
+    },//Valley
+    {
+        name:"Hill",
+        desc:"Digits rise to a number then fall back down.",
+        find: function(n){
+            var phase = 0;
+            for(var i = 0; i < n.length-1; i++){
+                var step = n[i+1] - n[i];
+                step = -step;// flip a Hill into a Valley
+                if(step < 0){// moving away (down for Valley)
+                    if(phase == 2) return false;// dropped again after rising
+                    phase = Math.max(phase, 1);
+                } else if(step > 0){// moving back (up for Valley)
+                    if(phase == 0) return false;// rose before any real drop
+                    phase = 2;
+                }
+            }
+            return phase == 2;
+        },
+        rarity: function(n){
+            return shapeRarity(n.length, false);
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            let small = 0;
+            let s_i = 0;
+            for(var i = 0; i < n.length; i++){
+                if(small != Math.max(small, n[i])){
+                    s_i = i;
+                    small = Math.max(small, n[i]);
+                }
+            }
+            R.push({i:s_i, t:1});
+            for(var i = n.length-1; i >= s_i+1; i--){
+                R.push({i:i, t:4});
+            }
+            for(var i = 0; i < s_i; i++){
+                R.push({i:i, t:4});
+            }
+            return R;
+        }
+    },//Hill
+    {
+        name:"Trench",
+        desc:"The two largest digits are the first and last ones.",
+        find: function(n){
+            if(n.length < 3) return false;
+            for(var i = 1; i < n.length-1; i++){
+                if(n[i] >= n[0]) return false;
+                if(n[i] >= n[n.length-1]) return false;
+            }
+            return true;
+        },
+        rarity: function(n){
+            // m = the smaller of the first and last digit. Every middle digit must be below m.
+            // (first, last) pairs with smaller one = m: 19 - 2m  (first is 1-9, last is 0-9)
+            // P = sum over m of (19 - 2m)/90 * (m/10)^(L-2)
+            var L = n.length;
+            if(L < 3) return 0;
+            var p = 0;
+            for(var m = 1; m <= 9; m++) p += (19 - 2*m) / 90 * (m / 10) ** (L - 2);
+            return p;
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            for(var i = 1; i < n.length-1; i++){
+                R.push({i:i, t:1});
+            }
+            R.push({i:0, t:2},{i:n.length-1, t:2});
+            return R;
+        }
+    },//Trench
+    {
+        name:"Plateau",
+        desc:"The two smallest digits are the first and last ones.",
+        find: function(n){
+            if(n.length < 3) return false;
+            for(var i = 1; i < n.length-1; i++){
+                if(n[i] <= n[0]) return false;
+                if(n[i] <= n[n.length-1]) return false;
+            }
+            return true;
+        },
+        rarity: function(n){
+            // M = the bigger of the first and last digit. Every middle digit must be above M.
+            // (first, last) pairs with bigger one = M: 2M  (first is 1-9, last is 0-9)
+            // P = sum over M of 2M/90 * ((9-M)/10)^(L-2)
+            var L = n.length;
+            if(L < 3) return 0;
+            var p = 0;
+            for(var M = 1; M <= 8; M++) p += 2*M / 90 * ((9 - M) / 10) ** (L - 2);
+            return p;
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            for(var i = 1; i < n.length-1; i++){
+                R.push({i:i, t:1});
+            }
+            R.push({i:0, t:2},{i:n.length-1, t:2});
+            return R;
+        }
+    },//Plateau
     // Alternation - Digits alternate between two different digits
+    //
     // It's time - includes a proper timestamp in HHMMSS
     // It's date (EU) - includes a proper date in DDMMYY
     // It's date (US) - includes a proper date in MMDDYY
@@ -1188,10 +1359,46 @@ evaluations = [
     // Zigzag - Every digits keeps swapping between increasing and decreasing
     // Rugged Landscape - Every digits keeps swapping between incraesing and decreasing with flat areas allowed
     // Rolle's Theorem - The first, last, and one of the middle digits are the same digit.
+    // Three's a Match - The same digit appears at least three times in a row.
 
-    //exceptions (Doesn't include a digit)
+    //exceptions (All But One)
 
-    //All But One - includes every digit at least once except one.
+    {
+        name:"All But One",
+        desc:"Incudes every digit except one.",
+        find: function(n){
+            var t = ['0','1','2','3','4','5','6','7','8','9'];
+            var V = 0;
+            var z = n.join("");
+            for(var j = 0; j < t.length; j++){
+                if (z.split(t[j]).length - 1 != 0){
+                    V++;
+                }
+            }
+            if(V == 9) return true;
+            return false;
+        },
+        rarity: function(n){
+            // S = ways to fill L spots so all 9 digits of a 9-digit set show up (inclusion-exclusion):
+            //     S = sum over k of (-1)^k * C(9,k) * (9-k)^L
+            // Missing 0: first digit is never 0, so S numbers.
+            // Missing 1-9 (9 ways): 1/9 of them start with 0, so 8/9 * S each.
+            // Total = 9 * S, out of 9 * 10^(L-1) numbers  ->  P = S / 10^(L-1)
+            var L = n.length;
+            if(L < 9) return 0;
+            var C = 1, p = 0;// C = C(9,k)
+            for(var k = 0; k <= 9; k++){
+                p += (k % 2 == 0 ? 1 : -1) * C * 10 * ((9 - k) / 10) ** L;
+                C = C * (9 - k) / (k + 1);
+            }
+            return p;
+        },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
+    },//All But One
 
 
 ]

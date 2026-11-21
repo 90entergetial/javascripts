@@ -13,6 +13,7 @@ Nov-11/18/2026 - I LOVE THIS. I added so much stuff in like a day lol.
 
 Nov-11/19/2026 - More and MORE COLORS..
 - EVERY EVAL now has a transition
+- EVERY DIGIT now has a transition for EVERY EVAL
 - All the rarities I hope I need are now there.. I don't think anyone will be getting over a 1 in a 10^19 chance
 - the evaluations.js is now VERY clean, did need some help for the really complex probabilities ;-;
 - smooth +addtoj and it flashes color by the rarity!!!
@@ -22,3 +23,4 @@ Nov-11/20/2026 - MORE evaluations
 - can view every card in full now
 - apparently you can put variables in CSS!? Insane revelation
 - the AURA now gives the current highest rarity color
+- cards can be ordered by date, rarity and amount of cards now :o

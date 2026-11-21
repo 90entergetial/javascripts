@@ -68,6 +68,10 @@
         margin:0px;
         text-align: center;
     }
+    #h_card_p{
+        color: rgb(52, 52, 52);
+        font-size: 15px;
+    }
     #i {
         position: absolute;
         top: 30%;
@@ -253,6 +257,63 @@
         background-color: rgba(255, 255, 255, 0.1);
         margin-bottom: 10px;
     }
+
+    /* dropdown */
+    #dropdown {
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    .dd-content {
+        display: none;
+        flex-direction: column;
+        position: fixed;
+        right: 10px;
+        top: 39px;
+        background-color: none;
+        z-index: 2;
+    }
+    #dd-button {
+        font-family:monospace;
+        font-weight: lighter;
+        width: 150px;
+        height: 25px;
+        background-color: rgb(29, 29, 29);
+        border-radius: 3px;
+        position: fixed;
+        right:10px;
+        border: solid rgba(0, 0, 0, 0.15) 1px;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        font-size: 15px;
+        color:white;
+    }
+    .dd-content a {
+        background-color: rgb(29, 29, 29);
+        border: solid rgba(0, 0, 0, 0.15) 2px;
+        width: 150px;
+        border-radius: 3px;
+        height: 25px;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        font-size:14px;
+    }
+    #dd-button:hover{
+        background-color: rgb(33, 33, 33);
+    }
+    .dd-content a:hover {
+        background-color: rgb(33, 33, 33);
+    }
+    #ui_toparea {
+        display: flex;
+        align-items: center;
+    }
+    #dropdown:hover .dd-content {
+        display: flex;
+    }
+
     </style>
 </head>
 <body style="margin: 0px;">
@@ -271,7 +332,21 @@
     <div id="pnumber"></div>
     <div id="history"><h1>H</h1></div>
     <div id="ui_history">
-        <p id="CIH">0 cards in history</p>
+        <div id="ui_toparea">
+            <p id="CIH">0 cards in history</p>
+            <div id="dropdown">
+                <button id="dd-button">By date-</button>
+                <div class="dd-content">
+                    <a>By date+</a>
+                    <a>By date-</a>
+                    <a>By rarity+</a>
+                    <a>By rarity-</a>
+                    <a>By evals+</a>
+                    <a>By evals-</a>
+                </div>
+            </div>
+        </div>
+
         <div id="history_list"></div>
     </div>
     <div id="ui_history_detail">

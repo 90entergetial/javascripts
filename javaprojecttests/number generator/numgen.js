@@ -26,7 +26,7 @@ window.onload = function () {
     // card_transitions = false;//usually true
 
     var number, j=randomBigInt(10000000n), addtoj=0n;
-    j=1111111n;
+    j=88616240n;
     number = j;
     var delayed_addtoj = addtoj;
     var delayed_number = number;
@@ -267,6 +267,11 @@ window.onload = function () {
                     }
                 b.append(hnum);
                 var B = document.createElement("div");
+                B.id = "h_card_p";
+                B.innerHTML = `${succesfull_evals.length} evals - Rolled at ${((new Date()).getHours() < 9) ? ("0" + (new Date()).getHours()) : (new Date()).getHours()}:${((new Date()).getMinutes() < 9) ? ("0" + (new Date()).getMinutes()) : (new Date()).getMinutes()}:${((new Date()).getSeconds() < 9) ? ("0" + (new Date()).getSeconds()) : (new Date()).getSeconds()}`;
+                b.append(B);
+
+                var B = document.createElement("div");
                 B.className = "divider";
                 b.append(B);
 
@@ -293,11 +298,41 @@ window.onload = function () {
             e.stopPropagation();
             openhistorydetail(b);
         });
-        history.append(b);
+        history_cards.push({el: b, date: history_cards.length, rarity: V, evals: succesfull_evals.length});
+        sort_history();
 
         var CIH = document.getElementById("CIH");
-        CIH.innerHTML = `${addcommas(history.childElementCount)} cards in history`;
+        CIH.innerHTML = `${addcommas(history_cards.length)} cards in history`;
     }
+
+    //every history card + what it can be sorted by
+    //date = order it was rolled in (higher = more recent), rarity = highest rarity, evals = how many evals
+    var history_cards = [];
+    var history_sort = "By date-";
+    var history_sorters = {
+        "By date+":   function(a, b){ return b.date - a.date; },     //most recent on top
+        "By date-":   function(a, b){ return a.date - b.date; },     //most recent on bottom
+        "By rarity+": function(a, b){ return b.rarity - a.rarity; }, //highest rarity on top
+        "By rarity-": function(a, b){ return a.rarity - b.rarity; }, //lowest rarity on top
+        "By evals+":  function(a, b){ return b.evals - a.evals; },   //most evals on top
+        "By evals-":  function(a, b){ return a.evals - b.evals; },   //fewest evals on top
+    };
+    //re-orders the cards inside history_list using the current history_sort
+    function sort_history(){
+        var sorter = history_sorters[history_sort] || history_sorters["By date-"];
+        //ties keep date order (most recent last), so equal cards don't jump around
+        var sorted = history_cards.slice().sort(function(a, b){ return sorter(a, b) || a.date - b.date; });
+        //append() moves existing elements, so this just reorders them (click listeners are kept)
+        document.getElementById("history_list").append(...sorted.map(function(c){ return c.el; }));
+    }
+    document.querySelectorAll("#dropdown .dd-content a").forEach(function(option){
+        option.addEventListener("click", function(e){
+            e.stopPropagation(); //don't count as a click outside the history detail
+            history_sort = option.textContent.trim();
+            document.getElementById("dd-button").innerHTML = history_sort;
+            sort_history();
+        });
+    });
 
     function openhistorydetail(card) {
         var detail = document.getElementById("ui_history_detail");
