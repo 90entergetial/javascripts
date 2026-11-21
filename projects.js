@@ -8,7 +8,7 @@ window.PROJECTS = [
     image: "LaTeX-2.png",
     video: "LaTeX-2.mp4",
     description:
-      "A test of a step-by-step process of putting in a forumla using Reverse Polish Notation using LaTeX.",
+      "A test of a step-by-step process of putting in a formula using Reverse Polish Notation using LaTeX.",
   },
   {
     title: "Efficient Bounces",
