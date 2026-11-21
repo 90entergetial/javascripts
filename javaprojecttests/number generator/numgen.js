@@ -93,7 +93,7 @@ window.onload = function () {
         }
         if(X == "compliment"){
             if(r < ra[0]) r = ra[0] -1;
-            else if(r < ra[1]) r = ra[0] +1;
+            else if(r < ra[1]) r = ra[0] -1;
             else if(r < ra[2]) r = ra[0] +1;
             else if(r < ra[3]) r = ra[1] +1;
             else if(r < ra[4]) r = ra[2] +1;
@@ -307,7 +307,7 @@ window.onload = function () {
     //every history card + what it can be sorted by
     //date = order it was rolled in (higher = more recent), rarity = highest rarity, evals = how many evals
     var history_cards = [];
-    var history_sort = "By date-";
+    var history_sort = "By date+";
     var history_sorters = {
         "By date+":   function(a, b){ return b.date - a.date; },     //most recent on top
         "By date-":   function(a, b){ return a.date - b.date; },     //most recent on bottom
@@ -318,7 +318,7 @@ window.onload = function () {
     };
     //re-orders the cards inside history_list using the current history_sort
     function sort_history(){
-        var sorter = history_sorters[history_sort] || history_sorters["By date-"];
+        var sorter = history_sorters[history_sort] || history_sorters["By date+"];
         //ties keep date order (most recent last), so equal cards don't jump around
         var sorted = history_cards.slice().sort(function(a, b){ return sorter(a, b) || a.date - b.date; });
         //append() moves existing elements, so this just reorders them (click listeners are kept)

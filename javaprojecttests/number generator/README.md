@@ -24,3 +24,6 @@ Nov-11/20/2026 - MORE evaluations
 - apparently you can put variables in CSS!? Insane revelation
 - the AURA now gives the current highest rarity color
 - cards can be ordered by date, rarity and amount of cards now :o
+
+Nov-11/21/2026 - EVEN MORE evaluations
+- The ones I did I could absolutely do by hand it's not bad

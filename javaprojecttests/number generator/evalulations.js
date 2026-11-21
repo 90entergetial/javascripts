@@ -1350,12 +1350,215 @@ evaluations = [
         }
     },//Plateau
     // Alternation - Digits alternate between two different digits
-    //
-    // It's time - includes a proper timestamp in HHMMSS
-    // It's date (EU) - includes a proper date in DDMMYY
-    // It's date (US) - includes a proper date in MMDDYY
-    // It's a full date (EU) - includes a proper date in DDMMYYYY
-    // It's a full date (US) - includes a proper date in MMDDYYYY
+    {
+        name:"It's time",
+        desc:"Includes a proper timestamp in HHMMSS.",
+        find: function(n){
+            if(n.length < 6) return false;
+            for(var i = 0; i <= n.length-6; i++){
+                if(
+                    eval(n[i])*10 + eval(n[i+1]) < 24 &&
+                    eval(n[i+2])*10 + eval(n[i+3]) < 60 &&
+                    eval(n[i+4])*10 + eval(n[i+5]) < 60
+                ){
+                    return true;
+                }
+            }
+            return false;
+        },
+        rarity: function(n){
+            return (63/1250 + (n.length - 6) * (54/625));
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            for(var i = 0; i < n.length-5; i++){
+                if(
+                    eval(n[i])*10 + eval(n[i+1]) < 24 &&
+                    eval(n[i+2])*10 + eval(n[i+3]) < 60 &&
+                    eval(n[i+4])*10 + eval(n[i+5]) < 60
+                ){
+                    R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1});
+                    break;
+                }
+            }
+            return R;
+        }
+    },//It's time
+
+    {
+        name:"It's date",
+        desc:"Includes a proper date in DDMMYYYY.",
+        find: function(n){
+            if(n.length < 8) return false;
+            for(var i = 0; i <= n.length-8; i++){
+                if(
+                    eval(n[i+2])*10 + eval(n[i+3]) < 13 &&
+                    eval(n[i+2])*10 + eval(n[i+3]) > 0
+                ){
+                    let year = eval(n[i+4])*1000 + eval(n[i+5])*100 + eval(n[i+6])*10 + eval(n[i+7]);
+                    let days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                    if(year%4 == 0) days[1] = 29; 
+                    let j = days[eval(n[i+2])*10 + eval(n[i+3]) - 1];
+                    if(
+                        eval(n[i])*10 + eval(n[i+1]) > 0 &&
+                        eval(n[i])*10 + eval(n[i+1]) <= j
+                    ){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        },
+        rarity: function(n){
+            return (20.5/100 * 12/100 + (n.length - 8) * (30.5/100 * 12/100));
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            for(var i = 0; i <= n.length-8; i++){
+                if(
+                    eval(n[i+2])*10 + eval(n[i+3]) < 13 &&
+                    eval(n[i+2])*10 + eval(n[i+3]) > 0
+                ){
+                    let year = eval(n[i+4])*1000 + eval(n[i+5])*100 + eval(n[i+6])*10 + eval(n[i+7]);
+                    let days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                    if(year%4 == 0) days[1] = 29; 
+                    let j = days[eval(n[i+2])*10 + eval(n[i+3]) - 1];
+                    if(
+                        eval(n[i])*10 + eval(n[i+1]) > 0 &&
+                        eval(n[i])*10 + eval(n[i+1]) <= j
+                    ){
+                        R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1},{i:i+6, t:1},{i:i+7, t:1});
+                    }
+                }
+            }
+            
+            return R;
+        }
+    },//It's date
+    {
+        name:"It's date (US)",
+        desc:"Includes a proper date in MMDDYYYY.",
+        find: function(n){
+            if(n.length < 8) return false;
+            for(var i = 0; i <= n.length-8; i++){
+                if(
+                    eval(n[i])*10 + eval(n[i+1]) < 13 &&
+                    eval(n[i])*10 + eval(n[i+1]) > 0
+                ){
+                    let year = eval(n[i+4])*1000 + eval(n[i+5])*100 + eval(n[i+6])*10 + eval(n[i+7]);
+                    let days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                    if(year%4 == 0) days[1] = 29; 
+                    let j = days[eval(n[i])*10 + eval(n[i+1]) - 1];
+                    if(
+                        eval(n[i+2])*10 + eval(n[i+3]) > 0 &&
+                        eval(n[i+2])*10 + eval(n[i+3]) <= j
+                    ){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        },
+        rarity: function(n){
+            return (30.5/100 * 3/100 + (n.length - 8) * (30.5/100 * 12/100));
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            for(var i = 0; i <= n.length-8; i++){
+                if(
+                    eval(n[i])*10 + eval(n[i+1]) < 13 &&
+                    eval(n[i])*10 + eval(n[i+1]) > 0
+                ){
+                    let year = eval(n[i+4])*1000 + eval(n[i+5])*100 + eval(n[i+6])*10 + eval(n[i+7]);
+                    let days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                    if(year%4 == 0) days[1] = 29; 
+                    let j = days[eval(n[i])*10 + eval(n[i+1]) - 1];
+                    if(
+                        eval(n[i+2])*10 + eval(n[i+3]) > 0 &&
+                        eval(n[i+2])*10 + eval(n[i+3]) <= j
+                    ){
+                        R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1},{i:i+6, t:1},{i:i+7, t:1});
+                    }
+                }
+            }
+            
+            return R;
+        }
+    },//It's date (US)
+    {
+        name:"It's a leap day!",
+        desc:"Includes a leap day in DDMMYYYY.",
+        find: function(n){
+            if(n.length < 8) return false;
+            for(var i = 0; i <= n.length-8; i++){
+                if(
+                    (eval(n[i+4])*1000 + eval(n[i+5])*100 + eval(n[i+6])*10 + eval(n[i+7]))%4 == 0 &&
+                    eval(n[i])*10 + eval(n[i+1]) == 29 &&
+                    eval(n[i+2])*10 + eval(n[i+3]) == 2
+                ){
+                    return true;
+                }
+            }
+            return false;
+        },
+        rarity: function(n){
+            return ((n.length - 7) * (1/100 * 1/100 * 1/4));
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            for(var i = 0; i <= n.length-8; i++){
+                if(
+                    (eval(n[i+4])*1000 + eval(n[i+5])*100 + eval(n[i+6])*10 + eval(n[i+7]))%4 == 0 &&
+                    eval(n[i])*10 + eval(n[i+1]) == 29 &&
+                    eval(n[i+2])*10 + eval(n[i+3]) == 2
+                ){
+                    R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1},{i:i+6, t:1},{i:i+7, t:1});
+                }
+            }
+            
+            return R;
+        }
+    },//It's a leap day
+    {
+        name:"It's a leap day! (US)",
+        desc:"Includes a leap day in MMDDYYYY.",
+        find: function(n){
+            if(n.length < 9) return false;
+            for(var i = 0; i <= n.length-8; i++){
+                if(
+                    (eval(n[i+4])*1000 + eval(n[i+5])*100 + eval(n[i+6])*10 + eval(n[i+7]))%4 == 0 &&
+                    eval(n[i+2])*10 + eval(n[i+3]) == 29 &&
+                    eval(n[i])*10 + eval(n[i+1]) == 2
+                ){
+                    return true;
+                }
+            }
+            return false;
+        },
+        rarity: function(n){
+            return ((n.length - 8) * (1/100 * 1/100 * 1/4));
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            for(var i = 0; i <= n.length-8; i++){
+                if(
+                    (eval(n[i+4])*1000 + eval(n[i+5])*100 + eval(n[i+6])*10 + eval(n[i+7]))%4 == 0 &&
+                    eval(n[i+2])*10 + eval(n[i+3]) == 29 &&
+                    eval(n[i])*10 + eval(n[i+1]) == 2
+                ){
+                    R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1},{i:i+6, t:1},{i:i+7, t:1});
+                }
+            }
+            
+            return R;
+        }
+    },//It's a leap day (US)
+
     // Zigzag - Every digits keeps swapping between increasing and decreasing
     // Rugged Landscape - Every digits keeps swapping between incraesing and decreasing with flat areas allowed
     // Rolle's Theorem - The first, last, and one of the middle digits are the same digit.
