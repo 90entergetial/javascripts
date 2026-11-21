@@ -1351,7 +1351,7 @@ evaluations = [
     },//Plateau
     // Alternation - Digits alternate between two different digits
     {
-        name:"It's time",
+        name:"It's Time",
         desc:"Includes a proper timestamp in HHMMSS.",
         find: function(n){
             if(n.length < 6) return false;
@@ -1387,7 +1387,7 @@ evaluations = [
     },//It's time
 
     {
-        name:"It's date",
+        name:"It's Date",
         desc:"Includes a proper date in DDMMYYYY.",
         find: function(n){
             if(n.length < 8) return false;
@@ -1438,7 +1438,7 @@ evaluations = [
         }
     },//It's date
     {
-        name:"It's date (US)",
+        name:"It's Date (US)",
         desc:"Includes a proper date in MMDDYYYY.",
         find: function(n){
             if(n.length < 8) return false;
@@ -1489,7 +1489,7 @@ evaluations = [
         }
     },//It's date (US)
     {
-        name:"It's a leap day!",
+        name:"It's a Leap Day!",
         desc:"Includes a leap day in DDMMYYYY.",
         find: function(n){
             if(n.length < 8) return false;
@@ -1524,7 +1524,7 @@ evaluations = [
         }
     },//It's a leap day
     {
-        name:"It's a leap day! (US)",
+        name:"It's a Leap Day! (US)",
         desc:"Includes a leap day in MMDDYYYY.",
         find: function(n){
             if(n.length < 9) return false;
@@ -1558,6 +1558,42 @@ evaluations = [
             return R;
         }
     },//It's a leap day (US)
+    {
+        name:"Pesky Heterogenus",
+        desc:"Every digit is unique... except one shows up twice.",
+        find: function(n){
+            if(n.length > 11) return false;
+            let p = 0;
+            for(var i = 0; i < n.length; i++){
+                for(var j = i+1; j < n.length; j++){// j > i so each pair is only counted once
+                    if(n[i] == n[j]){
+                        p += 1;
+                        if(p == 2) return false;
+                    }
+                }
+            }
+            if(p == 1) return true;
+            return false;
+        },
+        rarity: function(n){
+            // Ignoring the "no leading 0" rule: pick the doubled digit (10), pick the other L-2
+            // different digits (C(9, L-2)), then arrange them (L!/2).
+            // Every digit is equally likely to be first, so 1/10 of those start with 0.
+            // P = (9/10 * 10 * C(9,L-2) * L!/2) / (9 * 10^(L-1)) = 5 * C(9,L-2) * L! / 10^L
+            var L = n.length;
+            if(L < 2 || L > 11) return 0;
+            var C = 1;// C(9, L-2)
+            for(var k = 0; k < L-2; k++) C = C * (9 - k) / (k + 1);
+            var f = 1;// L!
+            for(var k = 2; k <= L; k++) f *= k;
+            return 5 * C * f / 10 ** L;
+        },
+        transitions: function(n){
+            //whatever sorcery this is
+            const N = Array.from({ length: n.length }, (_, i) => i + 1);
+            return N.map(x => ({i:x-1, t:1}));
+        }
+    },//Heterogenus
 
     // Zigzag - Every digits keeps swapping between increasing and decreasing
     // Rugged Landscape - Every digits keeps swapping between incraesing and decreasing with flat areas allowed

@@ -26,6 +26,7 @@ window.onload = function () {
     // card_transitions = false;//usually true
 
     var number, j=randomBigInt(10000000n), addtoj=0n;
+    j=982137430n;
     number = j;
     var delayed_addtoj = addtoj;
     var delayed_number = number;
@@ -240,11 +241,12 @@ window.onload = function () {
     var succesfull_evals = [];
     function addcurrenttohistory() {
 
-
         let V = 1;
-        for(var i = 0; i < succesfull_evals.length; i++){
-            V = Math.max(succesfull_evals[i].rarity, V);
-        }
+            for(var i = succesfull_evals.length-1; i >= 0; i--){
+                V += succesfull_evals[i].rarity**2;
+            }
+         V = Math.sqrt(V);
+
         var history = document.getElementById("history_list");
 
             var b = document.createElement("div");
@@ -427,7 +429,14 @@ window.onload = function () {
 
     var number_bg_to_rarity_rarity = 0;
     function number_bg_to_rarity(t=-20){
-        if(t != -20) number_bg_to_rarity_rarity = Math.max(t, number_bg_to_rarity_rarity);
+        if(t != -20) {
+            number_bg_to_rarity_rarity = 0;
+            for(var i = succesfull_evals.length-1; i >= 0; i--){
+                if(succesfull_evals[i].rarity > t) break;
+                number_bg_to_rarity_rarity += succesfull_evals[i].rarity**2;
+            }
+            number_bg_to_rarity_rarity = Math.sqrt(number_bg_to_rarity_rarity);
+        }
         else number_bg_to_rarity_rarity = 0;
         let da = rarity_to_color(1/number_bg_to_rarity_rarity, "indication");
 
