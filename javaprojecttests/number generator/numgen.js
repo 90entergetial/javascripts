@@ -26,7 +26,6 @@ window.onload = function () {
     // card_transitions = false;//usually true
 
     var number, j=randomBigInt(10000000n), addtoj=0n;
-    j=982137430n;
     number = j;
     var delayed_addtoj = addtoj;
     var delayed_number = number;
@@ -458,16 +457,6 @@ window.onload = function () {
     function reiterate(){
         number_bg_to_rarity();
         addcurrenttohistory();
-        let V = 0;
-        for(var i = 0; i < succesfull_evals.length; i++){
-            V += succesfull_evals[i].rarity;
-        }
-        console.log("Number: " + number + " | (+" + addcommas(addtoj) + ") | " + succesfull_evals.length + " successfull evals | 1 in " + addcommas(Math.round(V)));
-        console.log("-----");
-        for(var i = 0; i < succesfull_evals.length; i++){
-        console.log(evaluations[succesfull_evals[i].id].name + " - " + evaluations[succesfull_evals[i].id].desc + " - 1 in " + addcommas(Math.round(succesfull_evals[i].rarity)));
-        }
-        console.log("-----");
         succesfull_evals = [];
         evals = document.getElementById("evals");
         evals.replaceChildren();
