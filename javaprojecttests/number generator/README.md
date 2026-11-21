@@ -28,3 +28,4 @@ Nov-11/20/2026 - MORE evaluations
 Nov-11/21/2026 - EVEN MORE evaluations
 - The ones I did I could absolutely do by hand it's not bad
 - Number's rarity is now dependent on all the evals it gets, not just the rarest!
+- Fixed a probability divide-by-zero happening in the Shuffled Deck eval 

@@ -829,7 +829,7 @@ window.onload = function () {
         for(var i = 0; i < evaluations.length; i++){
             var evali = evaluations[i];
             if(evali.find(number_in_parts)){
-                let wonned = (1/evali.rarity(number_in_parts));
+                let wonned = (1/(Math.max(evali.rarity(number_in_parts),10 ** (-200))));
                 succesfull_evals.push({id: i, rarity: wonned});
             }
         }

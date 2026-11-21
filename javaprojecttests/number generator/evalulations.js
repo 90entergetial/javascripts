@@ -1090,6 +1090,7 @@ evaluations = [
         rarity: function(n){
             // P = (n-1) * (n-1)! / (9 * 10^(n-1))
             // the f below is (n-1)!
+            if(n.length == 1) return 1/10;
             var f = 1;
             for(var i = 2; i < n.length; i++) f *= i;
             return (n.length - 1) * f / (9 * Math.pow(10, n.length - 1));
