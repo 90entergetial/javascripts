@@ -26,7 +26,6 @@ window.onload = function () {
     // card_transitions = false;//usually true
 
     var number, j=randomBigInt(10000000n), addtoj=0n;
-    j=88616240n;
     number = j;
     var delayed_addtoj = addtoj;
     var delayed_number = number;
