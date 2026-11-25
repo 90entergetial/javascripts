@@ -19,13 +19,15 @@ window.onload = function () {
     let number_movement_duration = 750;//usually 750, in ms
     let number_movement_overlap = 150;//usually 150, in ms
 
+    let play_more_than_once = true;//usually false
+
     // run_next_interation_after = 0;//usually 2000
     // until_start_eval = 0;//usually 1000
     // card_speed = 0;//usually 80
     // card_transition_speed = 0;//usually 500
     // card_transitions = false;//usually true
 
-    var number, j=randomBigInt(10000000n), addtoj=0n;
+    var number, j=randomBigInt(100000000n), addtoj=0n;
     number = j;
     var delayed_addtoj = addtoj;
     var delayed_number = number;
@@ -464,7 +466,7 @@ window.onload = function () {
         delayed_addtoj = addtoj;
         delayed_number = j;
         //number = j;
-        number=randomBigInt(100000000n);
+        number=randomBigInt(1000000000n);
         number_in_parts = number.toString().split("");
         cardmaking();
         number_eval();
@@ -726,7 +728,7 @@ window.onload = function () {
             j += add_this;
             updati();
         }
-        setTimeout(function(){reiterate();},run_next_interation_after);
+        play_more_than_once ? setTimeout(function(){reiterate();},run_next_interation_after) : false;
         } else {
         //show one by one, from the last (most common) to index 0 (rarest), each one stacked on top
         //of the last. Each card waits for the one before it with a setTimeout chain.
@@ -798,7 +800,7 @@ window.onload = function () {
 
             //last card shown: wait for its number animations (if longer) before the next number
             if(i == 0){
-                setTimeout(function(){reiterate();}, Math.max(run_next_interation_after, number_time));
+                play_more_than_once ? setTimeout(function(){reiterate();}, Math.max(run_next_interation_after, number_time)) : false;
                 return;
             }
 
@@ -816,7 +818,7 @@ window.onload = function () {
             setTimeout(function(){show_next(i - 1);}, delay);
         }
         if(succesfull_evals.length == 0){
-            setTimeout(function(){reiterate();}, run_next_interation_after);
+            play_more_than_once ? setTimeout(function(){reiterate();}, run_next_interation_after) : false;
         } else {
             show_next(succesfull_evals.length - 1);
         }
@@ -893,9 +895,11 @@ window.onload = function () {
     // }, 100);
 
     //background stuffs
+    
     function update() {
         if(window.innerWidth != canvas.width) canvas.width = window.innerWidth;
         if(window.innerHeight != canvas.height) canvas.height = window.innerHeight;
+        //to mamke the +n's very smooth
         if(delayed_addtoj != addtoj){
             delayed_addtoj -= addtoj;
             delayed_addtoj *= 8000n;

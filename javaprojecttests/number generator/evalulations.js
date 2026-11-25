@@ -127,6 +127,153 @@ function shapeRarity(length, valley){
     return total;
 }
 
+// ---------- Exact rarity for "includes a window that fits a pattern" (times, dates, ...) ----------
+// A pattern is a list of slots, and each slot is the list of digits allowed there,
+// e.g. [[0,1], ANY, [0,1,2,3,4,5], ANY] for "HHMM-ish". `patterns` is a list of those.
+// The patterns are merged into a small automaton that tracks every partial match at once,
+// then the chance of a random number (first digit 1-9) containing a full match is worked out
+// one digit at a time, like containsRarity(). The automaton is built once per `key` and cached.
+const ANY = [0,1,2,3,4,5,6,7,8,9];
+var patternCache = {};
+function patternRarity(key, makePatterns, length){
+    if(!patternCache[key]) patternCache[key] = buildPatternDFA(makePatterns());
+    var dfa = patternCache[key];
+    if(length < dfa.width) return 0;
+    // state[s] = chance of being in automaton state s with no full match yet
+    var state = new Array(dfa.next.length).fill(0);
+    var found = 0;
+    for(var d = 1; d <= 9; d++){// first digit is 1-9
+        var t = dfa.next[0][d];
+        if(t == -1) found += 1/9; else state[t] += 1/9;
+    }
+    for(var i = 1; i < length; i++){
+        var ns = new Array(dfa.next.length).fill(0);
+        for(var s = 0; s < state.length; s++){
+            if(state[s] == 0) continue;
+            var pr = state[s] / 10;
+            for(var d = 0; d <= 9; d++){
+                var t = dfa.next[s][d];
+                if(t == -1) found += pr; else ns[t] += pr;
+            }
+        }
+        state = ns;
+    }
+    return found;
+}
+function buildPatternDFA(patterns){
+    // 1. a trie of the patterns (each edge is a set of digits)
+    var nodes = [{kids:{}, end:false}];
+    for(var p = 0; p < patterns.length; p++){
+        var at = 0;
+        for(var k = 0; k < patterns[p].length; k++){
+            var sig = patterns[p][k].join("");
+            if(nodes[at].kids[sig] === undefined){
+                nodes.push({kids:{}, end:false});
+                nodes[at].kids[sig] = nodes.length - 1;
+            }
+            at = nodes[at].kids[sig];
+        }
+        nodes[at].end = true;
+    }
+    // 2. merge identical branches (all the "any year" endings become one shared chain)
+    var canon = {}, id = new Array(nodes.length);
+    var visit = function(v){
+        if(id[v] !== undefined) return id[v];
+        var parts = [];
+        for(var sig in nodes[v].kids) parts.push(sig + ">" + visit(nodes[v].kids[sig]));
+        parts.sort();
+        var h = (nodes[v].end ? "E" : "") + "|" + parts.join(",");
+        if(canon[h] === undefined) canon[h] = v;
+        return id[v] = canon[h];
+    };
+    visit(0);
+    // step[v][d] = nodes reached from node v on digit d
+    var step = {};
+    var stepOf = function(v){
+        if(step[v]) return step[v];
+        var out = [];
+        for(var d = 0; d <= 9; d++) out.push([]);
+        for(var sig in nodes[v].kids){
+            for(var c = 0; c < sig.length; c++) out[+sig[c]].push(id[nodes[v].kids[sig]]);
+        }
+        return step[v] = out;
+    };
+    // 3. turn "every partial match at once" into single states (subset construction)
+    //    A state is the set of trie nodes we are currently at; the root is always included,
+    //    because a new match can start at any digit. -1 means a full match was reached.
+    var width = 0;
+    for(var p = 0; p < patterns.length; p++) width = Math.max(width, patterns[p].length);
+    var keyOf = function(set){ return set.join(","); };
+    var states = [[0]], index = {"0":0}, next = [];
+    for(var s = 0; s < states.length; s++){
+        var row = [];
+        for(var d = 0; d <= 9; d++){
+            var set = {0:true}, hit = false;
+            for(var a = 0; a < states[s].length; a++){
+                var go = stepOf(states[s][a])[d];
+                for(var b = 0; b < go.length; b++){
+                    if(nodes[go[b]].end) hit = true;
+                    set[go[b]] = true;
+                }
+            }
+            if(hit){ row.push(-1); continue; }
+            var arr = Object.keys(set).map(Number).sort(function(x, y){ return x - y; });
+            var k = keyOf(arr);
+            if(index[k] === undefined){ index[k] = states.length; states.push(arr); }
+            row.push(index[k]);
+        }
+        next.push(row);
+    }
+    return {next:next, width:width};
+}
+function digitsOf(x, size){// 7 -> [0,7] for size 2
+    var s = String(x).padStart(size, "0");
+    return s.split("").map(function(c){ return [+c]; });
+}
+// All valid (day, month) pairs as digit slots, in DDMM (us = false) or MMDD (us = true) order,
+// followed by a 4-digit year. 29/02 needs year % 4 == 0, which only depends on the last 2 year digits:
+// tens digit even -> ones digit 0, 4 or 8;  tens digit odd -> ones digit 2 or 6.
+function datePatterns(us, leapOnly){
+    var days = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    var out = [];
+    for(var m = 1; m <= 12; m++){
+        for(var d = 1; d <= days[m-1]; d++){
+            var leap = (m == 2 && d == 29);
+            if(leapOnly && !leap) continue;
+            var head = us ? digitsOf(m, 2).concat(digitsOf(d, 2)) : digitsOf(d, 2).concat(digitsOf(m, 2));
+            if(!leap){
+                out.push(head.concat([ANY, ANY, ANY, ANY]));
+            } else {
+                out.push(head.concat([ANY, ANY, [0,2,4,6,8], [0,4,8]]));
+                out.push(head.concat([ANY, ANY, [1,3,5,7,9], [2,6]]));
+            }
+        }
+    }
+    return out;
+}
+
+// Probability that a random number with `length` digits (first digit 1-9) has the same digit
+// k times in a row somewhere. Each new digit matches the one before it with chance 1/10 (whatever
+// the first digit is), so only the length of the current run matters.
+// run[r] = chance the current run is r long (1 to k-1) and there's been no run of k yet
+function runRarity(length, k){
+    if(length < k) return 0;
+    if(k <= 1) return 1;
+    var run = new Array(k).fill(0);
+    run[1] = 1;// the first digit starts a run of 1
+    var found = 0;
+    for(var i = 1; i < length; i++){
+        var nr = new Array(k).fill(0);
+        for(var r = 1; r < k; r++){
+            nr[1] += run[r] * 9/10;// different digit: run resets to 1
+            if(r + 1 == k) found += run[r] / 10;// same digit: the run reaches k
+            else nr[r+1] += run[r] / 10;// same digit: run grows by 1
+        }
+        run = nr;
+    }
+    return found;
+}
+
 // Start index of the first `times` separate (non-overlapping) copies of lookfor, or false
 function findCopies(n, lookfor, times){
     var z = n.join("");
@@ -1368,7 +1515,11 @@ evaluations = [
             return false;
         },
         rarity: function(n){
-            return (63/1250 + (n.length - 6) * (54/625));
+            // HH = 00-23, MM = 00-59, SS = 00-59
+            return patternRarity("time", function(){
+                var M = [0,1,2,3,4,5];
+                return [[[0,1], ANY, M, ANY, M, ANY], [[2], [0,1,2,3], M, ANY, M, ANY]];
+            }, n.length);
         },
         transitions: function(n){
             //find the smallest number
@@ -1379,14 +1530,11 @@ evaluations = [
                     eval(n[i+2])*10 + eval(n[i+3]) < 60 &&
                     eval(n[i+4])*10 + eval(n[i+5]) < 60
                 ){
-                    R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1});
-                    break;
+                    return [{i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1}];
                 }
             }
-            return R;
         }
     },//It's time
-
     {
         name:"It's Date",
         desc:"Includes a proper date in DDMMYYYY.",
@@ -1412,7 +1560,7 @@ evaluations = [
             return false;
         },
         rarity: function(n){
-            return (20.5/100 * 12/100 + (n.length - 8) * (30.5/100 * 12/100));
+            return patternRarity("date", function(){ return datePatterns(false, false); }, n.length);
         },
         transitions: function(n){
             //find the smallest number
@@ -1430,12 +1578,10 @@ evaluations = [
                         eval(n[i])*10 + eval(n[i+1]) > 0 &&
                         eval(n[i])*10 + eval(n[i+1]) <= j
                     ){
-                        R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1},{i:i+6, t:1},{i:i+7, t:1});
+                        return [{i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1},{i:i+6, t:1},{i:i+7, t:1}];
                     }
                 }
             }
-            
-            return R;
         }
     },//It's date
     {
@@ -1463,7 +1609,7 @@ evaluations = [
             return false;
         },
         rarity: function(n){
-            return (30.5/100 * 3/100 + (n.length - 8) * (30.5/100 * 12/100));
+            return patternRarity("dateUS", function(){ return datePatterns(true, false); }, n.length);
         },
         transitions: function(n){
             //find the smallest number
@@ -1481,12 +1627,10 @@ evaluations = [
                         eval(n[i+2])*10 + eval(n[i+3]) > 0 &&
                         eval(n[i+2])*10 + eval(n[i+3]) <= j
                     ){
-                        R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1},{i:i+6, t:1},{i:i+7, t:1});
+                        return [{i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1},{i:i+6, t:1},{i:i+7, t:1}];
                     }
                 }
             }
-            
-            return R;
         }
     },//It's date (US)
     {
@@ -1506,7 +1650,7 @@ evaluations = [
             return false;
         },
         rarity: function(n){
-            return ((n.length - 7) * (1/100 * 1/100 * 1/4));
+            return patternRarity("leap", function(){ return datePatterns(false, true); }, n.length);
         },
         transitions: function(n){
             //find the smallest number
@@ -1517,11 +1661,9 @@ evaluations = [
                     eval(n[i])*10 + eval(n[i+1]) == 29 &&
                     eval(n[i+2])*10 + eval(n[i+3]) == 2
                 ){
-                    R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1},{i:i+6, t:1},{i:i+7, t:1});
+                    return [{i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1},{i:i+6, t:1},{i:i+7, t:1}];
                 }
             }
-            
-            return R;
         }
     },//It's a leap day
     {
@@ -1541,7 +1683,7 @@ evaluations = [
             return false;
         },
         rarity: function(n){
-            return ((n.length - 8) * (1/100 * 1/100 * 1/4));
+            return patternRarity("leapUS", function(){ return datePatterns(true, true); }, n.length);
         },
         transitions: function(n){
             //find the smallest number
@@ -1552,11 +1694,9 @@ evaluations = [
                     eval(n[i+2])*10 + eval(n[i+3]) == 29 &&
                     eval(n[i])*10 + eval(n[i+1]) == 2
                 ){
-                    R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1},{i:i+6, t:1},{i:i+7, t:1});
+                    return [{i:i, t:1},{i:i+1, t:1},{i:i+2, t:2},{i:i+3, t:2},{i:i+4, t:1},{i:i+5, t:1},{i:i+6, t:1},{i:i+7, t:1}];
                 }
             }
-            
-            return R;
         }
     },//It's a leap day (US)
     {
@@ -1591,15 +1731,222 @@ evaluations = [
         },
         transitions: function(n){
             //whatever sorcery this is
-            const N = Array.from({ length: n.length }, (_, i) => i + 1);
-            return N.map(x => ({i:x-1, t:1}));
+            var N = [];
+            for(var i = 0; i < n.length; i++){
+                var c = false;
+                for(var j = 0; j < n.length; j++){
+                    if(n[i] == n[j] && i != j){
+                        c = true;
+                        N.push({i:i, t:2});
+                        break;
+                    }
+                }
+                if(!c){
+                    N.push({i:i, t:3});
+                }
+            }
+            return N;
         }
-    },//Heterogenus
+    },//Pesky Heterogenus
+    {
+        name:"Three's a Match",
+        desc:"The same digit appears three times in a row.",
+        find: function(n){
+            if(n.length < 3) return false;
+            for(var i = 0; i <= n.length-3; i++){
+                if(
+                    n[i] == n[i+1] && n[i+1] == n[i+2]
+                ){
+                    return true;
+                }
+            }
+            return false;
+        },
+        rarity: function(n){
+            return runRarity(n.length, 3);// same digit 3 times in a row
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            for(var i = 0; i <= n.length-3; i++){
+                if(
+                    n[i] == n[i+1] && n[i+1] == n[i+2]
+                ){
+                    R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:1});
+                    return R;
+                }
+            }
+        }
+    },//Three's a Match
+    {
+        name:"Four's a Match",
+        desc:"The same digit appears four times in a row.",
+        find: function(n){
+            if(n.length < 4) return false;
+            for(var i = 0; i <= n.length-4; i++){
+                if(
+                    n[i] == n[i+1] && n[i+1] == n[i+2] && n[i+2] == n[i+3]
+                ){
+                    return true;
+                }
+            }
+            return false;
+        },
+        rarity: function(n){
+            return runRarity(n.length, 4);// same digit 4 times in a row
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            for(var i = 0; i <= n.length-4; i++){
+                if(
+                    n[i] == n[i+1] && n[i+1] == n[i+2] && n[i+2] == n[i+3]
+                ){
+                    R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:1},{i:i+3, t:1});
+                    return R;
+                }
+            }
+        }
+    },//Four's a Match
+    {
+        name:"Five's a Match",
+        desc:"The same digit appears five times in a row.",
+        find: function(n){
+            if(n.length < 5) return false;
+            for(var i = 0; i <= n.length-5; i++){
+                if(
+                    n[i] == n[i+1] && n[i+1] == n[i+2] && n[i+2] == n[i+3] && n[i+3] == n[i+4]
+                ){
+                    return true;
+                }
+            }
+            return false;
+        },
+        rarity: function(n){
+            return runRarity(n.length, 5);// same digit 5 times in a row
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            for(var i = 0; i <= n.length-5; i++){
+                if(
+                    n[i] == n[i+1] && n[i+1] == n[i+2] && n[i+2] == n[i+3] && n[i+3] == n[i+4]
+                ){
+                    R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:1},{i:i+3, t:1},{i:i+4, t:1});
+                    return R;
+                }
+            }
+        }
+    },//Five's a Match
+    {
+        name:"Zigzag",
+        desc:"Every digits swaps between increasing and decreasing.",
+        find: function(n){
+            if(n.length < 3) return false;
+            // every step has to go up or down (no flat steps), and the opposite way to the step before
+            var last = 0;// +1 = last step went up, -1 = went down
+            for(var i = 0; i < n.length-1; i++){
+                var step = Math.sign(n[i+1] - n[i]);
+                if(step == 0 || step == last) return false;
+                last = step;
+            }
+            return true;
+        },
+        rarity: function(n){
+            // Whether the next step can go up or down depends on the last digit (after a 9 it can't
+            // go up), so the steps aren't independent. Track the last digit and the last step instead:
+            // up[d] / down[d] = chance the digits zigzag so far, ending on digit d after an up / down step
+            var L = n.length;
+            if(L < 3) return 0;
+            var up = new Array(10).fill(0), down = new Array(10).fill(0);
+            // first step: first digit a is 1-9, second digit b is 0-9
+            for(var a = 1; a <= 9; a++){
+                for(var b = 0; b <= 9; b++){
+                    if(b > a) up[b] += 1/90;
+                    if(b < a) down[b] += 1/90;
+                }
+            }
+            for(var i = 2; i < L; i++){
+                var nu = new Array(10).fill(0), nd = new Array(10).fill(0);
+                for(var d = 0; d <= 9; d++){
+                    for(var e = 0; e <= 9; e++){
+                        if(e < d) nd[e] += up[d] / 10;// went up, so now go down
+                        if(e > d) nu[e] += down[d] / 10;// went down, so now go up
+                    }
+                }
+                up = nu; down = nd;
+            }
+            var total = 0;
+            for(var d = 0; d <= 9; d++) total += up[d] + down[d];
+            return total;
 
-    // Zigzag - Every digits keeps swapping between increasing and decreasing
-    // Rugged Landscape - Every digits keeps swapping between incraesing and decreasing with flat areas allowed
+
+        },
+        transitions: function(n){
+            //{ i:index, t:(1 = basic bounce, 2 = comp bounce, 3 = basic, 4 = comp) }
+            var x = [];
+            for(var i = 0; i < n.length/2; i++){
+                x.push({i:i*2, t:1},{i:i*2+1, t:2});
+            }
+            return x;
+        }
+    },//Zigzag
+    {
+        name:"Rugged Landscape",
+        desc:"Every digits swaps between increasing and decreasing, with flat areas allowed.",
+        find: function(n){
+            if(n.length < 3) return false;
+            // every step has to go up or down (no flat steps), and the opposite way to the step before
+            var last = 0;// +1 = last step went up, -1 = went down
+            for(var i = 0; i < n.length-1; i++){
+                var step = Math.sign(n[i+1] - n[i]);
+                if(step == last) return false;
+                if(step != 0) last = step;
+            }
+            return true;
+        },
+        rarity: function(n){
+            // Whether the next step can go up or down depends on the last digit (after a 9 it can't go up),
+            // so the steps aren't independent. Track the last digit and the last step instead:
+            // up[d] / down[d] = chance the digits zigzag so far, ending on digit d after an up / down step
+            var L = n.length;
+            if(L < 3) return 0;
+            var up = new Array(10).fill(0), down = new Array(10).fill(0);
+            // first step: first digit a is 1-9, second digit b is 0-9
+            for(var a = 1; a <= 9; a++){
+                for(var b = 0; b <= 9; b++){
+                    if(b >= a) up[b] += 1/90;
+                    if(b <= a) down[b] += 1/90;
+                }
+            }
+            for(var i = 2; i < L; i++){
+                var nu = new Array(10).fill(0), nd = new Array(10).fill(0);
+                for(var d = 0; d <= 9; d++){
+                    for(var e = 0; e <= 9; e++){
+                        if(e <= d) nd[e] += up[d] / 10;// went up, so now go down
+                        if(e >= d) nu[e] += down[d] / 10;// went down, so now go up
+                    }
+                }
+                up = nu; down = nd;
+            }
+            var total = 0;
+            for(var d = 0; d <= 9; d++) total += up[d] + down[d];
+            return total;
+
+
+        },
+        transitions: function(n){
+            //{ i:index, t:(1 = basic bounce, 2 = comp bounce, 3 = basic, 4 = comp) }
+            var x = [];
+            for(var i = 0; i < n.length/2; i++){
+                x.push({i:i*2, t:1},{i:i*2+1, t:2});
+            }
+            return x;
+        }
+    },//Rugged Landscape
+
     // Rolle's Theorem - The first, last, and one of the middle digits are the same digit.
-    // Three's a Match - The same digit appears at least three times in a row.
+    // Majority Digit - A digit appears more times than all the other digits combined.
 
     //exceptions (All But One)
 
@@ -1642,6 +1989,33 @@ evaluations = [
 
 
 ]
+
+/*
+    {
+        name:"Example Name",
+        desc:"Example: The number doesn't have a six.",
+        find: function(n){
+            for(var i = 0; i < n.length; i++){
+                if(n[i] == "6"){
+                    return false;
+                }
+            }
+            return true;
+        },
+        rarity: function(n){
+            return  (8/9) * (9/10) ** (n.length-1);
+        },
+        transitions: function(n){
+            //{ i:index, t:(1 = basic bounce, 2 = comp bounce, 3 = basic, 4 = comp) }
+            var x = [];
+            for(var i = 0; i < n.length/2; i++){
+                x.push({i:i, t:1},{i:i+(n.length/2), t:2});
+            }
+            return x;
+        }
+    },//Example Name
+
+*/
 
 //exacts
 exactEval({name:"Devil", desc:"Includes 6 three times in a row.", lookfor:"666"});
