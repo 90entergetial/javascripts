@@ -28,12 +28,13 @@ window.onload = function () {
     // card_transitions = false;//usually true
 
     var number, j=randomBigInt(100000000n), addtoj=0n;
+    j = 188888882n;
     number = j;
     var delayed_addtoj = addtoj;
     var delayed_number = number;
     var number_in_parts = number.toString().split("");
     var k = document.getElementById("number");
-
+    
     function rarity_to_color(r, t, X=false){
         if(r == false) r = 1;
         r = 1/r;//inverse
@@ -793,7 +794,9 @@ window.onload = function () {
                     number_time = transite(evali, number_in_parts);
                     number_time = transite(evali, number_in_parts, true, number_time);
                 }
-
+            
+            if(typeof j != "bigint") throw new Error("j has to be a BigInt.");
+            if(typeof addtoj != "bigint") throw new Error("addtoj has to be a BigInt.");
             addtoj += add_this;
             j += add_this;
             updati();

@@ -1839,6 +1839,66 @@ evaluations = [
         }
     },//Five's a Match
     {
+        name:"Six's a Match",
+        desc:"The same digit appears six times in a row.",
+        find: function(n){
+            if(n.length < 6) return false;
+            for(var i = 0; i <= n.length-6; i++){
+                if(
+                    n[i] == n[i+1] && n[i+1] == n[i+2] && n[i+2] == n[i+3] && n[i+3] == n[i+4] && n[i+4] == n[i+5]
+                ){
+                    return true;
+                }
+            }
+            return false;
+        },
+        rarity: function(n){
+            return runRarity(n.length, 6);// same digit 5 times in a row
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            for(var i = 0; i <= n.length-6; i++){
+                if(
+                    n[i] == n[i+1] && n[i+1] == n[i+2] && n[i+2] == n[i+3] && n[i+3] == n[i+4] && n[i+4] == n[i+5]
+                ){
+                    R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:1},{i:i+3, t:1},{i:i+4, t:1},{i:i+5, t:1});
+                    return R;
+                }
+            }
+        }
+    },//Six's a Match
+    {
+        name:"Seven's a Match",
+        desc:"The same digit appears seven times in a row.",
+        find: function(n){
+            if(n.length < 7) return false;
+            for(var i = 0; i <= n.length-7; i++){
+                if(
+                    n[i] == n[i+1] && n[i+1] == n[i+2] && n[i+2] == n[i+3] && n[i+3] == n[i+4] && n[i+4] == n[i+5] && n[i+5] == n[i+6]
+                ){
+                    return true;
+                }
+            }
+            return false;
+        },
+        rarity: function(n){
+            return runRarity(n.length, 7);
+        },
+        transitions: function(n){
+            //find the smallest number
+            let R = [];
+            for(var i = 0; i <= n.length-7; i++){
+                if(
+                    n[i] == n[i+1] && n[i+1] == n[i+2] && n[i+2] == n[i+3] && n[i+3] == n[i+4] && n[i+4] == n[i+5] && n[i+5] == n[i+6]
+                ){
+                    R.push({i:i, t:1},{i:i+1, t:1},{i:i+2, t:1},{i:i+3, t:1},{i:i+4, t:1},{i:i+5, t:1},{i:i+6, t:1});
+                    return R;
+                }
+            }
+        }
+    },//Six's a Match
+    {
         name:"Zigzag",
         desc:"Every digits swaps between increasing and decreasing.",
         find: function(n){
@@ -1944,9 +2004,110 @@ evaluations = [
             return x;
         }
     },//Rugged Landscape
+    {
+        name:"Rolle's Theorem",
+        desc:"The first, last, and one of the middle digits are the same digit.",
+        find: function(n){
+            if(n.length < 3) return false;
+            if(n[0] != n[n.length-1]) return false;
+            var yep_its_there = false;
+            for(var i = 1; i < n.length-1; i++){
+                if(n[i] == n[0]){
+                    yep_its_there = true;
+                    break;
+                }
+            }
+            if(yep_its_there){
+            return true;
+            }
+            return false;
+        },
+        rarity: function(n){
+            let L = n.length-2;
+            //Chance the first and last digit are the same:
+            //Since the first digit canont be 0, 90 total possibilities
+            //9 of them end up with the digit being the same, so 9 in 90 or 1 in 10
+            let Pt = 1 / 10;
+            //The first digit is already picked (call it d), so each middle digit (0-9) is d with a 1 in 10 chance,
+            //and not d with a 9 in 10 chance. All the middle digits miss d with a chance of 0.9 ** L,
+            //so flip that to get the chance at least one middle digit is d.
+            return  Pt * (1 - 0.9 ** L);
+        },
+        transitions: function(n){
+            //{ i:index, t:(1 = basic bounce, 2 = comp bounce, 3 = basic, 4 = comp) }
+            var x = [{i:0, t:1},{i:n.length-1, t:1}];
+            for(var i = 1; i < n.length-1; i++){
+                if(n[i] == n[0]){
+                    x.push({i:i, t:1});
+                }
+            }
+            return x;
+        }
+    },//Rolle's Theorem
+    {
+        name:"Majority Wins",
+        desc:"A digit appears more times than all the other digits combined.",
+        find: function(n){
+            if(n.length < 3) return false; // it'll always be 100% when n.length is 1 and a bajillion other evals when n.length is 2.
+            //look for this number; just check every number
+            for(var N = 0; N < 10; N++){
+                let z = n.join("");
+                if (z.split(N.toString()).length - 1 == 0){
+                    continue; // nah it's not here
+                }
+                //nah it IS here
+                //50% is false.
+                if (z.split(N.toString()).length - 1 > Math.floor(n.length/2)){
+                    return true;
+                }
+            }
+            return false;
+        },
+        rarity: function(n){
+            let L = n.length;
+            //For a number with size L and doesn't start with 0, what's the
+            //chance that more than half of the digits are the same digit...
 
-    // Rolle's Theorem - The first, last, and one of the middle digits are the same digit.
-    // Majority Digit - A digit appears more times than all the other digits combined.
+            //Only ONE digit can ever be more than half of the digits, so the 10 digits' chances
+            //never overlap and can just be added together.
+            //m = the smallest count that is more than half
+            let m = Math.floor(L/2) + 1;
+
+            //X = how many times a digit shows up in the last L-1 digits (each one is it with a 1 in 10 chance)
+            //atLeast(k) = chance that X >= k   (binomial: sum of nCr(L-1, j) * 0.1^j * 0.9^(L-1-j))
+            function atLeast(k){
+                if(k <= 0) return 1;
+                let total = 0;
+                for(var j = k; j <= L-1; j++){
+                    //log of nCr(L-1, j), so long numbers don't overflow
+                    let logC = 0;
+                    for(var t = 0; t < j; t++) logC += Math.log(L-1-t) - Math.log(t+1);
+                    total += Math.exp(logC + j*Math.log(0.1) + (L-1-j)*Math.log(0.9));
+                }
+                return total;
+            }
+            //Digit 0: never the first digit, so it needs m of the last L-1 digits:  A
+            //Digits 1-9: 1 in 9 chance it's the first digit (then it needs m-1 more):  B
+            //            8 in 9 chance it isn't (then it needs m):  A
+            //Total: A + 9 * (B/9 + 8A/9) = 9A + B
+            let A = atLeast(m);
+            let B = atLeast(m - 1);
+            return 9*A + B;
+        },
+        transitions: function(n){
+            //{ i:index, t:(1 = basic bounce, 2 = comp bounce, 3 = basic, 4 = comp) }
+            var x = [];
+            for(var N = 0; N < 10; N++){
+                let z = n.join("");
+                if (z.split(N.toString()).length - 1 > Math.floor(n.length/2)){
+                    for(var i = 0; i < n.length; i++){
+                        if(n[i] == N.toString()) x.push({i:i, t:1});
+                    }
+                    return x;
+                }
+            }
+        }
+    },//Majority Wins
 
     //exceptions (All But One)
 
@@ -2034,6 +2195,8 @@ exactEval({name:"67", desc:"Includes 67.", lookfor:"67"});
 exactEval({name:"1337", desc:"Includes 1337.", lookfor:"1337"});
 exactEval({name:"Bond", desc:"Includes 007.", lookfor:"007"});
 exactEval({name:"An A+!", desc:"Includes 100.", lookfor:"100"});
+exactEval({name:"An A++!", desc:"Includes 105.", lookfor:"105"});
+exactEval({name:"A super A+!", desc:"Includes 200.", lookfor:"200"});
 exactEval({name:"Not Found", desc:"Includes 404.", lookfor:"404"});
 exactEval({name:"Police", desc:"Includes 911.", lookfor:"911"});
 exactEval({name:"Police (EU)", desc:"Includes 112.", lookfor:"112"});

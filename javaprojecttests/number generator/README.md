@@ -31,3 +31,5 @@ Nov-11/21/2026 - EVEN MORE evaluations
 - Fixed a probability divide-by-zero happening in the Shuffled Deck eval 
 
 Nov-11/25/2026 - EVEN MORE EVALUATIONS specifically Three's/Four's/Five's a Match, Rugged Landscape, Zigzag
+
+Nov-11/26/2026 - Seven's a Match BECAUSE I GOT THAT BY COMPLETE LUCK ONCE, Majority Wins and Rolle's Theorem.
